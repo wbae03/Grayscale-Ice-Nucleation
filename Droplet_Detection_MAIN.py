@@ -56,7 +56,7 @@ print('              [www.github.com/wbae03]              ')
 print('═════════════ *.·:·.✧ ° ❆ ° ✧.·:·.* ═════════════')
 
 #size_ratio = float(input('Enter a value to scale the video by: '))
-size_ratio = 0.4
+size_ratio = 0.25
 
 
 # LOAD CALIBRATION IMAGE

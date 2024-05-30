@@ -16,35 +16,57 @@ def frame_circles(frame):
     circles = cv2.HoughCircles(blurFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                             cv2.HOUGH_GRADIENT, 
                             1.1, # influences whether nearby circles will be merged
-                            100, # min distance between two circles' centers
-                            param1=30, # sensitivity of circle detection; High = wont find much circles
-                            param2=70, # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles
+                            60, # min distance between two circles' centers
+                            param1=42, # sensitivity of circle detection; High = wont find much circles
+                            param2=60, # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles
                             minRadius=30, # min radius of circles
-                            maxRadius=300)  # max radius of circles 
+                            maxRadius=300)  # max radius of circles # note to self: the radii parameters are quite important in selecting correct circles!!
     
-    if circles is None or len(circles) > 20: # if above parameters/settings were too demanding and the algorithm could not detect a circle, refer to the below parameters instead. On the other hand, if above settings are too sensitive and cause too many inaccurate circles to be detected, opt for less sensitive parameters below.
+    print('\nDetectiion parameters #1 used.')
+    
+    #print('fdsaadfdasfdsfsdasasfa', circles)
+    
+    if circles is None: # if above parameters/settings were too demanding and the algorithm could not detect a circle, refer to the below parameters instead. On the other hand, if above settings are too sensitive and cause too many inaccurate circles to be detected, opt for less sensitive parameters below.
         
         circles = cv2.HoughCircles(blurFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                                 cv2.HOUGH_GRADIENT, 
                                 1.1, # influences whether nearby circles will be merged
-                                80, # min distance between two circles
-                                param1=30, # sensitivity of circle detection; High = wont find much circles
-                                param2=55, # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles
-                                minRadius=20, # min radius of circles
-                                maxRadius=300)  # max radius of circles  
+                                60, # min distance between two circles
+                                param1=20, # sensitivity of circle detection; High = wont find much circles
+                                param2=45, # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles
+                                minRadius=30, # min radius of circles
+                                maxRadius=500)  # max radius of circles 
         
-        if circles is None or len(circles) > 20: # apply these circle detection parameters instead in the case that the video footage is too noisy/unclear in circles for the algorithm. DO NOT USE THESE SETTINGS FOR MORE DEFINED VIDEOS; MILLIONS OF CIRCLES WILL BE DETECTED OTHERWISE !!!
+        print('\nDetectiion parameters #2 used.')
+        
+    
+        if circles is None: # apply these circle detection parameters instead in the case that the video footage is too noisy/unclear in circles for the algorithm. DO NOT USE THESE SETTINGS FOR MORE DEFINED VIDEOS; MILLIONS OF CIRCLES WILL BE DETECTED OTHERWISE !!!
         
             circles = cv2.HoughCircles(blurFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                                     cv2.HOUGH_GRADIENT, 
                                     1.1, # influences whether nearby circles will be merged
-                                    20, # min distance between two circles
+                                    30, # min distance between two circles
                                     param1=15, # sensitivity of circle detection; High = wont find much circles
-                                    param2=55, # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles
-                                    minRadius=10, # min radius of circles
-                                    maxRadius=300)  # max radius of circles    
+                                    param2=40, # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles
+                                    minRadius=30, # min radius of circles
+                                    maxRadius=300)  # max radius of circles 
+            
+            print('\nDetectiion parameters #3 used.')
+       
+            if circles is None: # apply these circle detection parameters instead in the case that the video footage is too noisy/unclear in circles for the algorithm. DO NOT USE THESE SETTINGS FOR MORE DEFINED VIDEOS; MILLIONS OF CIRCLES WILL BE DETECTED OTHERWISE !!!
+        
     
-
+                circles = cv2.HoughCircles(blurFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
+                                        cv2.HOUGH_GRADIENT, 
+                                        1.1, # influences whether nearby circles will be merged
+                                        30, # min distance between two circles
+                                        param1=15, # sensitivity of circle detection; High = wont find much circles
+                                        param2=35, # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles
+                                        minRadius=30, # min radius of circles
+                                        maxRadius=300)  # max radius of circles    
+                
+                print('\n[WARNING] The least sensitive settings for circle detection was used. Consider using a sample video with clearer circles or optimize the circle detection settings.\n')
+    
     
     if circles is not None:
         #print(circles)
@@ -127,8 +149,8 @@ def frame_overlay_label(areas_sorted: list, frame, calibration_ratio):
         areas_sorted[i].append(circle_number) # by this point, each circle has 5 associated properties in this order: [xpos, ypos, radius, xy area, circle # ranked by area]
         #print(x, y)
 
-        frame = cv2.putText(frame, '#' + str(i+1), (x-50, y+10), font, 1, (0, 0, 0), 8, cv2.LINE_AA) # text outline
-        frame = cv2.putText(frame, '#' + str(i+1), (x-50, y+10), font, 1, (0, 255, 100), 2, cv2.LINE_AA) # i+1 so the first circle isnt labelled as '0'
+        frame = cv2.putText(frame, '#' + str(i+1), (x-60, y+10), font, 1, (0, 0, 0), 8, cv2.LINE_AA) # text outline
+        frame = cv2.putText(frame, '#' + str(i+1), (x-60, y+10), font, 1, (0, 255, 100), 2, cv2.LINE_AA) # i+1 so the first circle isnt labelled as '0'
 
         # radius label
 
