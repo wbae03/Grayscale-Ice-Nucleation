@@ -2,6 +2,7 @@
 
 import cv2 
 import numpy as np
+import math
 
 
 def frame_capture(i: int, cap):
@@ -15,29 +16,29 @@ def frame_circles(frame):
     circles = cv2.HoughCircles(blurFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                             cv2.HOUGH_GRADIENT, 
                             1.1, # influences whether nearby circles will be merged
-                            30, # min distance between two circles
+                            100, # min distance between two circles' centers
                             param1=30, # sensitivity of circle detection; High = wont find much circles
-                            param2=65, # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles
+                            param2=70, # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles
                             minRadius=30, # min radius of circles
                             maxRadius=300)  # max radius of circles 
     
-    if circles is None: 
+    if circles is None or len(circles) > 20: # if above parameters/settings were too demanding and the algorithm could not detect a circle, refer to the below parameters instead. On the other hand, if above settings are too sensitive and cause too many inaccurate circles to be detected, opt for less sensitive parameters below.
         
         circles = cv2.HoughCircles(blurFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                                 cv2.HOUGH_GRADIENT, 
                                 1.1, # influences whether nearby circles will be merged
-                                30, # min distance between two circles
+                                80, # min distance between two circles
                                 param1=30, # sensitivity of circle detection; High = wont find much circles
                                 param2=55, # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles
                                 minRadius=20, # min radius of circles
                                 maxRadius=300)  # max radius of circles  
         
-        if circles is None: # apply these circle detection parameters instead in the case that the video footage is too noisy/unclear in circles for the algorithm. DO NOT USE THESE SETTINGS FOR MORE DEFINED VIDEOS; MILLIONS OF CIRCLES WILL BE DETECTED OTHERWISE !!!
+        if circles is None or len(circles) > 20: # apply these circle detection parameters instead in the case that the video footage is too noisy/unclear in circles for the algorithm. DO NOT USE THESE SETTINGS FOR MORE DEFINED VIDEOS; MILLIONS OF CIRCLES WILL BE DETECTED OTHERWISE !!!
         
             circles = cv2.HoughCircles(blurFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                                     cv2.HOUGH_GRADIENT, 
                                     1.1, # influences whether nearby circles will be merged
-                                    30, # min distance between two circles
+                                    20, # min distance between two circles
                                     param1=15, # sensitivity of circle detection; High = wont find much circles
                                     param2=55, # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles
                                     minRadius=10, # min radius of circles
@@ -70,7 +71,7 @@ def frame_circles(frame):
                 #x, y, r = i[0], i[1], i[2]
                 #print('i circles i: ', i)
                 cv2.circle(frame, (i[0], i[1]), i[2], (0,0,255), 6) # circumference
-                cv2.circle(frame, (i[0], i[1]), 1, (0,0,255), 2)
+                cv2.circle(frame, (i[0], i[1]), 1, (0,0,255), 2) # center point
             else:
             
                 print('\n (Above RuntimeWarning explanation) Detected an out-of-bounds circle (y-pos: ', i[0], 'x-pos: ', i[1], 'pixel radius: ', i[2],'). Deselecting the circle...')
@@ -114,7 +115,7 @@ def frame_overlay_sort(circles):
 
     return areas_sorted
 
-def frame_overlay_label(areas_sorted: list, frame):
+def frame_overlay_label(areas_sorted: list, frame, calibration_ratio):
      for i in range(len(areas_sorted)):
           
         font = cv2.FONT_HERSHEY_COMPLEX
@@ -126,8 +127,31 @@ def frame_overlay_label(areas_sorted: list, frame):
         areas_sorted[i].append(circle_number) # by this point, each circle has 5 associated properties in this order: [xpos, ypos, radius, xy area, circle # ranked by area]
         #print(x, y)
 
-        frame = cv2.putText(frame, str(i+1), (x-10, y+10), font, 1, (0, 0, 0), 8, cv2.LINE_AA) # text outline
-        frame = cv2.putText(frame, str(i+1), (x-10, y+10), font, 1, (0, 255, 100), 2, cv2.LINE_AA) # i+1 so the first circle isnt labelled as '0'
+        frame = cv2.putText(frame, '#' + str(i+1), (x-50, y+10), font, 1, (0, 0, 0), 8, cv2.LINE_AA) # text outline
+        frame = cv2.putText(frame, '#' + str(i+1), (x-50, y+10), font, 1, (0, 255, 100), 2, cv2.LINE_AA) # i+1 so the first circle isnt labelled as '0'
+
+        # radius label
+
+        r = areas_sorted[i][2] # radius in pixels
+        calib_r = round(float(r) / float(calibration_ratio), 2) # radius in micrometer length
+
+        frame = cv2.line(frame, (x,y), (x+r, y), (0,0,255), 6)
+
+        frame = cv2.putText(frame, 'r=' + str(calib_r), (x+5, y-15), font, 1, (0, 0, 0), 8, cv2.LINE_AA) # text outline
+        frame = cv2.putText(frame, 'r=' + str(calib_r), (x+5, y-15), font, 1, (0, 255, 100), 2, cv2.LINE_AA)
+
+        # circumference, as a measure of curvature (its an opened and straightened out arc length). C = 2pir
+
+        circumference = round(2 * math.pi * calib_r, 2)
+
+        frame = cv2.putText(frame, 'C=' + str(circumference), (x+5, y+35), font, 1, (0, 0, 0), 8, cv2.LINE_AA) # text outline
+        frame = cv2.putText(frame, 'C=' + str(circumference), (x+5, y+35), font, 1, (0, 255, 100), 2, cv2.LINE_AA) 
+
+
+
+
+
+
 
 '''
 def frame_overlay_select(areas_sorted: list, frame_circle_sel):

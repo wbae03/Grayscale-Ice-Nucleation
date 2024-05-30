@@ -48,7 +48,7 @@ def get_intensity_difference_axes(intensity_axes):
 
     intensity_difference_axes = []
 
-
+    #print('mark')
 
 
     for i in range(len(intensity_axes)):
@@ -64,11 +64,11 @@ def get_intensity_difference_axes(intensity_axes):
 
             except:
                
-               print('ah')
+               y = 1 # throwaway variable. There will always be one exception, as the last value does not have a subsequent value to be subtracted from.
       
         intensity_difference_axes.append(hold_differences)
 
-    print(len(intensity_difference_axes[0]))
+    #print(len(intensity_difference_axes[0]), 'content:', intensity_difference_axes)
     return intensity_difference_axes
 
     

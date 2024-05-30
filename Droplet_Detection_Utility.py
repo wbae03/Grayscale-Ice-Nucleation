@@ -18,32 +18,32 @@ def make_appropriate_window_size(frame, cap):
         height = int(cap.get(4))
 
         target_resolution_x = 960
-        target_resolution_y = 540
+        #target_resolution_y = height / (width/960)
 
-        ratio_x = width / target_resolution_x
-        ratio_y = height / target_resolution_y
+        ratio_x = target_resolution_x / width
+        ratio_y =  ratio_x
 
-        if ratio_x >= 1:
-             ratio_x = 1 / ratio_x
+        #if ratio_x >= 1:
+         #    ratio_x = 1 / ratio_x
         
-        if ratio_y >= 1:
-             ratio_y = 1 / ratio_y
+        #if ratio_y >= 1:
+         #    ratio_y = 1 / ratio_y
 
-        if width != 500:
-             resized_frame = cv2.resize(frame, (0,0), fx = ratio_x, fy = ratio_y)
+        resized_frame = cv2.resize(frame, (0,0), fx = ratio_x, fy = ratio_y)
                                         
         return resized_frame
     
 
 def show_window(window_name: str, frame, size_ratio, cap, filename):
-    resized_frame = cv2.resize(frame, (0,0), fx = size_ratio, fy = size_ratio)
-    #resized_frame = make_appropriate_window_size(frame, cap)
+    #resized_frame = cv2.resize(frame, (0,0), fx = size_ratio, fy = size_ratio)
+    resized_frame = make_appropriate_window_size(frame, cap)
     resized_frame = vid_datetime(filename, resized_frame)
     resized_frame = get_frame_id(resized_frame, cap)
 
-    cv2.imshow(window_name, resized_frame)
     cv2.setWindowProperty(window_name, cv2.WND_PROP_TOPMOST, 1)
     cv2.moveWindow(window_name,10,50)
+    cv2.imshow(window_name, resized_frame)
+
 
 
 def vid_datetime(filename, frame):

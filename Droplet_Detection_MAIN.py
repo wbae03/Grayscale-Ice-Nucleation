@@ -46,14 +46,23 @@ import Droplet_Detection_Selection_Frame as DDS
 import Droplet_Detection_Intensity_Tracker as DDI
 import Droplet_Detection_Grapher as DDG
 
+
+print('\n\n\n═════════════ *.·:·.✧ ° ❆ ° ✧.·:·.* ═════════════')
+print('      Grayscale Ice Nucleation (GIN) software      ')
+print('         Originally designed for use with:         ')
+print('Vienna Optical Droplet Cryoscope Apparatus (VODCA) ')
+print('           Created by: William Bae (UBC)           ') 
+print('              [www.github.com/wbae03]              ')
+print('═════════════ *.·:·.✧ ° ❆ ° ✧.·:·.* ═════════════')
+
+#size_ratio = float(input('Enter a value to scale the video by: '))
+size_ratio = 0.4
+
+
 # LOAD CALIBRATION IMAGE
 
-calib_file = str(input('\n\n\n─── ∘°❉°∘ ──── ∘°❉°∘ ──── ∘°❉°∘ ──── ∘°❉°∘ ───\nEnter the name of the calibration image file: '))
-calib_file = 'Assets/' + calib_file
 
-
-
-print("Does the file exist: ", os.path.exists(calib_file))
+calib_file = '' # image file to be used for calibration. Determined by user input later on.
 
 # Global variables
 drawing = False  # True if mouse is pressed
@@ -63,25 +72,33 @@ calib_real_length = 0
 calib_pixel_length = 0
 calib_user_ready = False
 calibration_ratio = 0
+close_calib_window = False
 
 # Asks user if calibration image is available.
 
-use_calib_image = True
+use_calib_image = False
 
-ask_user_calib = input('\nDo you require calibration using an image showing a known measurement (ie. using a ruler)?\n Press \'Y\' to load an image.\n Press \'N\' to enter a known calibration ratio value (if you have previously completed the calibration and are analyzing the same video dimensions).\n\n')
 ask_user_calib_ready = False
 
-while ask_user_calib_ready == False:
-    if ask_user_calib == 'Y' or 'y':
+while not ask_user_calib_ready:
+
+    ask_user_calib = input('\nDo you require calibration using an image with a known measurement (ie. using a ruler)? \nYou may instead enter a calibration ratio (image pixel length / actual micrometer length) obtained from previous calibrations.\nPress \'Y\' to load an image.\nPress \'N\' to enter a known calibration ratio value.\n\n[USER INPUT] > ')
+
+    if ask_user_calib.lower() == 'y': #lower() = makes lowercase
+
         use_calib_image = True
         ask_user_calib_ready = True
+        calib_file = str(input('\n📏 Enter the name of the calibration image file:\n\n[USER INPUT] > '))
+        calib_file = 'Assets/' + calib_file
+        print("\n[SYSTEM] > Does the calibration file exist: ", os.path.exists(calib_file))
 
-    elif ask_user_calib == 'N' or 'n':
+    elif ask_user_calib.lower() == 'n':
+
         use_calib_image = False
         ask_user_calib_ready = True
 
     else:
-        print('================\nInvalid input. Please press \'Y\' or \'N\'.\n (Tip: if you do not require a calibration, you can just put in an arbitrary calibration value after press \'N\')')
+        print('\nInvalid input. Please press \'Y\' or \'N\'.\n (Tip: if you do not require a calibration, you can just put in an arbitrary calibration value after press \'N\')')
 
 
 if use_calib_image == True:
@@ -91,10 +108,13 @@ if use_calib_image == True:
     temp_image = image.copy()
 
     def on_mouse(event, x, y, flags, param):
-        global drawing, sbox, line_coords, temp_image, calib_pixel_length, calib_real_length, calib_user_ready, calibration_ratio
+        global drawing, sbox, line_coords, temp_image, calib_pixel_length, calib_real_length, calib_user_ready, calibration_ratio, close_calib_window
+
+        x = math.floor(x * 1/size_ratio) # note: resizing the window size DOES NOT scale down the frames system / mouse coordinate system.. must convert the mouse values by applying a opposite scale (ie if the frame is scaled down by 0.5 of original size, then scale mouse coordinates by 1/0.5 aka x2 !!)
+        y = math.floor(y * 1/size_ratio)
 
         if event == cv2.EVENT_LBUTTONDOWN:
-            print('Start Mouse Position: [' + str(x) + ',' + str(y) + ']')
+            print('\nStart Mouse Position: [' + str(x) + ',' + str(y) + ']')
             sbox = [x, y]
             line_coords.append(sbox)
             drawing = True
@@ -102,8 +122,8 @@ if use_calib_image == True:
         elif event == cv2.EVENT_MOUSEMOVE:
             if drawing:
                 temp_image = image.copy()  # Reset to the original image
-                cv2.line(temp_image, tuple(sbox), (x, y), (0, 0, 255), 5)
-                print('drawing! initial xy:', sbox, 'final xy:', x, y)
+                cv2.line(temp_image, tuple(sbox), (x, y), (0, 0, 255), 4)
+                #print('drawing! initial xy:', sbox, 'final xy:', x, y)
 
         elif event == cv2.EVENT_LBUTTONUP:
             print('End Mouse Position: [' + str(x) + ',' + str(y) + ']')
@@ -121,16 +141,16 @@ if use_calib_image == True:
 
             while calib_user_ready == False:
                 
-                calib_real_length = input('\nPlease enter the actual length [MICROMETERS] of the calibration tool\n\n')
+                calib_real_length = input('\nPlease enter the actual length [MICROMETERS] of the calibration tool.\n\n[USER INPUT] > ')
 
                 if calib_real_length.isnumeric():
 
                     calib_user_ready = True
                     calibration_ratio = round(float(calib_pixel_length) / float(calib_real_length), 2) # magnification = image length / actual length
-                    print('\nCalibration successful. The calibration ratio value is: [', calibration_ratio, '].\n Please write down this value if you will be analyzing more video data in the future, so you can enter the calibration ratio.')
+                    print('\nCalibration successful. The calibration ratio is: [', calibration_ratio, ']. \nPlease write down this value if you will be analyzing more video data in the future, so you can enter the calibration ratio.')
 
                 else:
-                    print('================\nInvalid input. Please enter the actual length [MICROMETERS] of the calibration tool')
+                    print('\nInvalid input. Please enter the actual length [MICROMETERS] of the calibration tool')
            
 
 
@@ -139,30 +159,40 @@ if use_calib_image == True:
     cv2.setMouseCallback('Calibration Window', on_mouse)
 
     # Keep the window open until a key is pressed
-    while True:
-        cv2.imshow('Calibration Window', temp_image)
-        
-        xx = input('yyy')
+    
+    print('\nIn the calibration window, please draw a line parallel to the calibration tool / ruler by holding the left mouse button.\n\n[USER INPUT] > ')
 
-        break 
-        #if cv2.waitKey(20) & 0xFF == 27:  # Exit on pressing 'ESC'
-         #   break
+    while close_calib_window == False:
+        resized_temp_image = cv2.resize(temp_image, (0,0), fx = size_ratio, fy = size_ratio)
+        cv2.setWindowProperty('Calibration Window', cv2.WND_PROP_TOPMOST, 1)
+        cv2.moveWindow('Calibration Window',10,50)
+        cv2.imshow('Calibration Window', resized_temp_image)
+        cv2.startWindowThread()
 
 
+        if calibration_ratio != 0:
+            close_calib_window = True
+
+        if cv2.waitKey(1) & 0xFF == 27:  # Exit on pressing 'ESC'
+            break
+
+    
 
 
 elif use_calib_image == False:
-    calibration_ratio = input('\nPlease enter a calibration ratio value. \nThis value may be obtained from previous calibrations or analysis of videos with the same dimensions.\n\n')
 
     while calib_user_ready == False:
+        calibration_ratio = input('\nPlease enter a calibration ratio value. \nThis value may be obtained from previous calibrations or analysis of videos with the same dimensions.\n\n[USER INPUT] > ')
 
-        if calibration_ratio.isnumeric():
+        try:
+            if isinstance(float(calibration_ratio), float): # checks if the instance is a number
 
-            calib_user_ready = True
-            print('\nCalibration successful. The calibration ratio value is: [', calibration_ratio, '].\n Please write down this value if you will be analyzing more video data in the future, so you can enter the calibration ratio.')
+                calib_user_ready = True
+                print('\nCalibration successful. The calibration ratio value is: [', calibration_ratio, '].\n Please write down this value if you will be analyzing more video data in the future, so you can enter the calibration ratio.')
 
-        else:
-            print('================\nInvalid input. Please enter the calibration ratio. If unknown, please restart the program and use a calibration image.')
+        except:
+            print('\nInvalid input. Please enter the calibration ratio. If unknown, please restart the program and use a calibration image.')
+    
 
 
 #calib_length = calc_distance(line_coords)
@@ -170,7 +200,7 @@ elif use_calib_image == False:
 
 # LOAD VIDEO
 
-file = str(input('\n\n\n─── ∘°❉°∘ ──── ∘°❉°∘ ──── ∘°❉°∘ ──── ∘°❉°∘ ───\nEnter the name of the video: '))
+file = str(input('\n🎦 Enter the name of the video:\n\n[USER INPUT] > '))
 filename = 'Assets/' + file
 #filename = 'Assets/TX100_MineralOil_1to3_Test_v3.mp4'
 cap = cv2.VideoCapture(filename)
@@ -184,8 +214,7 @@ minutes = int(duration/60)
 seconds = duration%60
 
 
-#size_ratio = float(input('Enter a value to scale the video by: '))
-size_ratio = 0.5
+
 
 frame_count = 1
 
@@ -195,10 +224,10 @@ frame_count = 1
 
 stop_reiterating = False
 x = 0
-print("Does the file exist: ", os.path.exists(filename))
+print("\n[SYSTEM] > Does the file exist: ", os.path.exists(filename))
 
 codec_code = cap2.get(cv2.CAP_PROP_FOURCC)
-print('Codec code of video: ', hex(int(codec_code)))
+print('\nCodec code of video: ', hex(int(codec_code)))
 '''
 while True:
     ret, frame = cap.read()
@@ -227,15 +256,16 @@ while True: # makes sure the video loaded + frames are able to be captured
 
     if stop_reiterating == False:
         if ret:
-            print('\n---------\nVideo Loaded Successfully')
+            print('\nVideo Loaded Successfully')
+            print('\n[Filename: ', filename, ']')
             print('Total frame count of video ----------- [', total_frame_count, ']')
             print('The detected video FPS --------------- [', fps, ']')
             print('Duration of the video: --------------- [', round(duration, 2), ' sec ], or [', str(minutes), ' min', str(round(seconds, 2)), ' sec ]')
-            frame_count_input = input('\nPlease enter an integer for the interval of frames to be analyzed. If no input is given, the FPS of the video will be used instead.\n(TIP: to anayze every n seconds of the video, enter the product of FPS * n.)\n\n')
+            frame_count_input = input('\nPlease enter an integer for the interval of frames to be analyzed. If no input is given, the FPS of the video will be used instead.\n(TIP: to anayze every n seconds of the video, enter the product of FPS * n.) \n\n[USER INPUT] > ')
 
             if frame_count_input.isnumeric():
                 frame_count = float(frame_count_input)
-                print('\nThe analysis will occur every [', frame_count,'] frames.\n')
+                print('\nThe analysis will occur every [', frame_count,'] frames.')
 
             else:
                 frame_count =  fps # if no int is given, resort to default fps setting of the video
@@ -267,9 +297,10 @@ while True: # makes sure the video loaded + frames are able to be captured
 
             # frame_overlay_label: numerically label the order of circles on frame screen
 
-            DDF.frame_overlay_label(areas_sorted, frame)
+            DDF.frame_overlay_label(areas_sorted, frame, calibration_ratio)
 
             n = 'WINDOW 1 /// DETECTED CIRCLES'
+            cv2.namedWindow(n)
             DDU.show_window(n, frame, size_ratio, cap, filename)
         
         else:
@@ -312,15 +343,16 @@ while True:
         # selected_circles_on_frame: places only the selected circles and corresponding numerical identity on a new still frame.
 
 
-        selection_frame = DDS.selected_circles_on_frame(selection_list, selection_frame)
+        selection_frame = DDS.selected_circles_on_frame_and_label(selection_list, selection_frame, calibration_ratio)
 
 
         n = 'WINDOW 2 /// SELECTED CIRCLES FOR ANALYSIS'
+        cv2.namedWindow(n)
         DDU.show_window(n, selection_frame, size_ratio, cap1, filename)
         
 
     if stop_reiterating == True:
-        i = input('\n---------\nThe deselected circles have been removed. \nPress [R or ENTER] to begin analysis of the change in intensity within each circle.')
+        i = input('\nThe deselected circles have been removed. \nPress [R or ENTER] to begin analysis of the change in intensity within each circle.\n\n[USER INPUT] > ')
         if i in 'Rr':
             break
     else:
@@ -333,8 +365,8 @@ while True:
 
 while True:
     stop_reiterating = False
-    print('\n---------\nTo cancel the program, please close the program.\n') #press \'Esc\' on the video window, or input Ctrl + C in console.\n')
-    cv2.destroyAllWindows
+    print('\n---------\nTo cancel the analysis, please close the program as it will not terminate properly within the client.\n') #press \'Esc\' on the video window, or input Ctrl + C in console.\n')
+    #cv2.destroyAllWindows
     video_BGR_data = []
     previous = time.time() # temporal resolution of processing
     delta = 0 # temporal resolution of processing
@@ -499,16 +531,16 @@ while True: # it seems that after video analysis, the data is stored in memory :
 
     intensity_axes = DDG.get_intensity_axes(video_BGR_data)
     intensity_difference_axes = DDG.get_intensity_difference_axes(intensity_axes)
-    #print('checkpoint 1')
+    #print('checkpoint 1', intensity_difference_axes)
 
 
     end_time = time.time()
     elapsed_time = round(end_time - start_time, 2)
-    print('\n---------\nThe analysis took: ', elapsed_time, ' seconds to complete (Efficiency: ', round(elapsed_time/duration*100, 2), ' % of time relative to the video duration)')
+    print('\nThe analysis took: ', elapsed_time, ' seconds to complete (Efficiency: ', round(elapsed_time/duration*100, 2), ' % of time relative to the video duration)')
 
     print('\nTotal frames analyzed: ', frame_id)
     
-    x = input('\nTo save the data as a .csv file and to show the plotted intensity vs frame or time graphs, press [R or ENTER].')
+    x = input('\nTo save the data as a .csv file and to show the plotted intensity vs frame or time graphs, press [R or ENTER].\n\n[USER INPUT] > ')
     if x in 'Rr':
         break
 
@@ -559,6 +591,6 @@ DDG.plot_dintensity_vs_dframes(intensity_difference_axes, frame_axes, axis, fram
 DDG.plot_intensity_vs_seconds(intensity_axes, video_seconds, axis)
 DDG.plot_dintensity_vs_seconds(intensity_difference_axes, video_seconds, axis)
 
-print('To conclude the script, please close the graph window.')
+print('\nTo conclude the script, please close the graph window or press [Ctrl + C].')
 plt.show()
 

@@ -1,6 +1,7 @@
 #Droplet_Detection_Selection_Frame
 import cv2 
 import numpy as np
+import math
 
 def frame_overlay_select():
 
@@ -11,7 +12,7 @@ def frame_overlay_select():
         
         #print('The deselected circles will be: ', selection_list)
         
-        print('\nPlease enter an integer representing the circle # that you wish to deselect. \nCurrently, the deselected circle(s) entered are: ', deselection_input_list, '\nOtherwise, press [R or ENTER] to confirm the chosen deselected circles, if any.\n')
+        print('\nPlease enter an integer representing the circle # that you wish to deselect. \nCurrently, the deselected circle(s) entered are: ', deselection_input_list, '\nOtherwise, press [R or ENTER] to confirm the chosen deselected circles, if any.\n\n[USER INPUT] > ')
         user_input = input()
 
         if user_input.isnumeric():
@@ -35,7 +36,7 @@ def make_selection_list(areas_sorted: list, deselection_input_list, selection_fr
 
         for i in areas_sorted:
             #print('i value:', i, type(i))
-            if i[4] in deselection_input_list:
+            if i[4] in deselection_input_list: # is the circle identity a part of the deselection list made by the user?
                 print('Circle #', i[4], ' --- Deselection successful!')
                 continue
             
@@ -64,7 +65,7 @@ def make_selection_list(areas_sorted: list, deselection_input_list, selection_fr
     
     return selection_list
 
-def selected_circles_on_frame(selection_list: list, selection_frame):
+def selected_circles_on_frame_and_label(selection_list: list, selection_frame, calibration_ratio):
 
         for i in selection_list:
 
@@ -77,8 +78,26 @@ def selected_circles_on_frame(selection_list: list, selection_frame):
             x = i[0]
             y = i[1]
 
-            selection_frame = cv2.putText(selection_frame, str(i[4]), (x-10, y+10), font, 1, (0, 0, 0), 8, cv2.LINE_AA) # text outline
-            selection_frame = cv2.putText(selection_frame, str(i[4]), (x-10, y+10), font, 1, (0, 255, 100), 2, cv2.LINE_AA) # i+1 so the first circle isnt labelled as '0'
+            selection_frame = cv2.putText(selection_frame, str(i[4]), (x-50, y+10), font, 1, (0, 0, 0), 8, cv2.LINE_AA) # text outline
+            selection_frame = cv2.putText(selection_frame, str(i[4]), (x-50, y+10), font, 1, (0, 255, 100), 2, cv2.LINE_AA) # i+1 so the first circle isnt labelled as '0'
+
+            # radius label
+
+            r = i[2] #radius in pixels
+            calib_r = round(float(r) / float(calibration_ratio), 2) # radius in micrometer length
+
+            selection_frame = cv2.line(selection_frame, (x,y), (x+r, y), (0,0,255), 6)
+
+            selection_frame = cv2.putText(selection_frame, 'r=' + str(calib_r), (x+5, y-15), font, 1, (0, 0, 0), 8, cv2.LINE_AA) # text outline
+            selection_frame = cv2.putText(selection_frame, 'r=' + str(calib_r), (x+5, y-15), font, 1, (0, 255, 100), 2, cv2.LINE_AA)
+
+            # circumference, as a measure of curvature (its an opened and straightened out arc length). C = 2pir
+
+            circumference = round(2 * math.pi * calib_r, 2)
+
+            selection_frame = cv2.putText(selection_frame, 'C=' + str(circumference), (x+5, y+35), font, 1, (0, 0, 0), 8, cv2.LINE_AA) # text outline
+            selection_frame = cv2.putText(selection_frame, 'C=' + str(circumference), (x+5, y+35), font, 1, (0, 255, 100), 2, cv2.LINE_AA) 
+
 
             print('Circle #', i[4], ' --- Selection successful!')
         return selection_frame
