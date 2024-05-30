@@ -141,12 +141,8 @@ if use_calib_image == True:
     # Keep the window open until a key is pressed
     while True:
         cv2.imshow('Calibration Window', temp_image)
-        
-        xx = input('yyy')
-
-        break 
-        #if cv2.waitKey(20) & 0xFF == 27:  # Exit on pressing 'ESC'
-         #   break
+        if cv2.waitKey(20) & 0xFF == 27:  # Exit on pressing 'ESC'
+            break
 
 
 
