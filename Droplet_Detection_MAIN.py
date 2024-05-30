@@ -38,12 +38,131 @@ import threading # for animated loading :D
 import sys # also for loading :0
 import matplotlib.pyplot as plt
 import numpy as np
+import math
 
 import Droplet_Detection_Utility as DDU
 import Droplet_Detection_Frame as DDF
 import Droplet_Detection_Selection_Frame as DDS
 import Droplet_Detection_Intensity_Tracker as DDI
 import Droplet_Detection_Grapher as DDG
+
+# LOAD CALIBRATION IMAGE
+
+calib_file = str(input('\n\n\n─── ∘°❉°∘ ──── ∘°❉°∘ ──── ∘°❉°∘ ──── ∘°❉°∘ ───\nEnter the name of the calibration image file: '))
+calib_file = 'Assets/' + calib_file
+
+
+
+print("Does the file exist: ", os.path.exists(calib_file))
+
+# Global variables
+drawing = False  # True if mouse is pressed
+sbox = []
+line_coords = []
+calib_real_length = 0
+calib_pixel_length = 0
+calib_user_ready = False
+calibration_ratio = 0
+
+# Asks user if calibration image is available.
+
+use_calib_image = True
+
+ask_user_calib = input('\nDo you require calibration using an image showing a known measurement (ie. using a ruler)?\n Press \'Y\' to load an image.\n Press \'N\' to enter a known calibration ratio value (if you have previously completed the calibration and are analyzing the same video dimensions).\n\n')
+ask_user_calib_ready = False
+
+while ask_user_calib_ready == False:
+    if ask_user_calib == 'Y' or 'y':
+        use_calib_image = True
+        ask_user_calib_ready = True
+
+    elif ask_user_calib == 'N' or 'n':
+        use_calib_image = False
+        ask_user_calib_ready = True
+
+    else:
+        print('================\nInvalid input. Please press \'Y\' or \'N\'.\n (Tip: if you do not require a calibration, you can just put in an arbitrary calibration value after press \'N\')')
+
+
+if use_calib_image == True:
+
+    # Load an image
+    image = cv2.imread(calib_file)
+    temp_image = image.copy()
+
+    def on_mouse(event, x, y, flags, param):
+        global drawing, sbox, line_coords, temp_image, calib_pixel_length, calib_real_length, calib_user_ready, calibration_ratio
+
+        if event == cv2.EVENT_LBUTTONDOWN:
+            print('Start Mouse Position: [' + str(x) + ',' + str(y) + ']')
+            sbox = [x, y]
+            line_coords.append(sbox)
+            drawing = True
+
+        elif event == cv2.EVENT_MOUSEMOVE:
+            if drawing:
+                temp_image = image.copy()  # Reset to the original image
+                cv2.line(temp_image, tuple(sbox), (x, y), (0, 0, 255), 5)
+                print('drawing! initial xy:', sbox, 'final xy:', x, y)
+
+        elif event == cv2.EVENT_LBUTTONUP:
+            print('End Mouse Position: [' + str(x) + ',' + str(y) + ']')
+            ebox = [x, y]
+            line_coords.append(ebox)
+            drawing = False
+            # Draw the final line on the main image
+            cv2.line(image, tuple(sbox), tuple(ebox), (0, 0, 255), 5)
+
+            # use pythagorean theorem to find length of line
+            x_length = abs(sbox[0] - ebox[0])
+            y_length = abs(sbox[1] - ebox[1])
+            calib_pixel_length = round(math.sqrt(x_length**2 + y_length*2), 2)
+            print('\nCalibration pixel length: [', calib_pixel_length, ']')
+
+            while calib_user_ready == False:
+                
+                calib_real_length = input('\nPlease enter the actual length [MICROMETERS] of the calibration tool\n\n')
+
+                if calib_real_length.isnumeric():
+
+                    calib_user_ready = True
+                    calibration_ratio = round(float(calib_pixel_length) / float(calib_real_length), 2) # magnification = image length / actual length
+                    print('\nCalibration successful. The calibration ratio value is: [', calibration_ratio, '].\n Please write down this value if you will be analyzing more video data in the future, so you can enter the calibration ratio.')
+
+                else:
+                    print('================\nInvalid input. Please enter the actual length [MICROMETERS] of the calibration tool')
+           
+
+
+    # Create a window and set the mouse callback
+    cv2.namedWindow('Calibration Window')
+    cv2.setMouseCallback('Calibration Window', on_mouse)
+
+    # Keep the window open until a key is pressed
+    while True:
+        cv2.imshow('Calibration Window', temp_image)
+        if cv2.waitKey(20) & 0xFF == 27:  # Exit on pressing 'ESC'
+            break
+
+
+
+
+elif use_calib_image == False:
+    calibration_ratio = input('\nPlease enter a calibration ratio value. \nThis value may be obtained from previous calibrations or analysis of videos with the same dimensions.\n\n')
+
+    while calib_user_ready == False:
+
+        if calibration_ratio.isnumeric():
+
+            calib_user_ready = True
+            print('\nCalibration successful. The calibration ratio value is: [', calibration_ratio, '].\n Please write down this value if you will be analyzing more video data in the future, so you can enter the calibration ratio.')
+
+        else:
+            print('================\nInvalid input. Please enter the calibration ratio. If unknown, please restart the program and use a calibration image.')
+
+
+#calib_length = calc_distance(line_coords)
+#print('calib length: ', calib_length)
 
 # LOAD VIDEO
 

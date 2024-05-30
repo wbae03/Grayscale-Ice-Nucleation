@@ -6,6 +6,11 @@ import datetime
 import os
 import platform
 import time
+import math
+
+
+
+
 
 def make_appropriate_window_size(frame, cap):
 
@@ -31,8 +36,8 @@ def make_appropriate_window_size(frame, cap):
     
 
 def show_window(window_name: str, frame, size_ratio, cap, filename):
-    #resized_frame = cv2.resize(frame, (0,0), fx = size_ratio, fy = size_ratio)
-    resized_frame = make_appropriate_window_size(frame, cap)
+    resized_frame = cv2.resize(frame, (0,0), fx = size_ratio, fy = size_ratio)
+    #resized_frame = make_appropriate_window_size(frame, cap)
     resized_frame = vid_datetime(filename, resized_frame)
     resized_frame = get_frame_id(resized_frame, cap)
 
