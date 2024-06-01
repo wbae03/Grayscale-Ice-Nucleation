@@ -14,13 +14,16 @@ def frame_circles(frame):
     #value, thresh = cv2.threshold(blurFrame, 200, 255, cv2.THRESH_BINARY_INV) # pixels below 130 become 0, above become 255 (white)
 
     circles = cv2.HoughCircles(blurFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
+                               
+                            # PLEASE DO NOT CHANGE THE PARAMETERS OF THIS FIRST SET!! THIS HAS BEEN OPTIMIZED FOR THREE VIDEOS THAT USUALLY NEVER HAVE NICE CIRCLES DETECTED TOGETHER, BUT THIS WORKS!!
+
                             cv2.HOUGH_GRADIENT, 
                             1.1, # influences whether nearby circles will be merged
                             60, # min distance between two circles' centers
                             param1=42, # sensitivity of circle detection; High = wont find much circles
-                            param2=60, # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles
+                            param2=75, # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles
                             minRadius=30, # min radius of circles
-                            maxRadius=300)  # max radius of circles # note to self: the radii parameters are quite important in selecting correct circles!!
+                            maxRadius=200)  # max radius of circles # note to self: the radii parameters are quite important in selecting correct circles!!
     
     print('\nDetectiion parameters #1 used.')
     

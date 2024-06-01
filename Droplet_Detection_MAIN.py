@@ -572,7 +572,7 @@ video_seconds = []
 for i in video_milliseconds:
     video_seconds.append(i/1000)
 
-d = {'Frame Time (milliseconds)': video_seconds, 'Frames Axes': frame_axes}
+d = {'Frame Time (seconds)': video_seconds, 'Frames Axes': frame_axes}
 #print(len(frame_axes), len(intensity_axes))
 export_intensity_differences = pd.DataFrame(d)
 
