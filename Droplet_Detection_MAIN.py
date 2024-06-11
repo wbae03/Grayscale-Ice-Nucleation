@@ -1,7 +1,5 @@
 #Droplet_Detection_MAIN
 
-# TO DO: frame_circles() fn may benefit from using thresholds to detect circles based on dark circumference
-
 '''
 Goals:
 
@@ -24,18 +22,23 @@ Notes:
 - Modularize!!
 - Try not to nest functions... hard to read :( 
 
+
+# TODO list
+# Make histogram / whisker plot of diff circle sizes
+# make heat map 
+# export data by organizing by circle size
+
 '''
 # PACKAGES AND MODULES
 
-#PLEASE REMEMBER TO RUN/SAVE EDITS TO MODULES; CODE WILL NOT WORK OTHERWISE.
 import cv2 
 import numpy as np
 import time
 import os
 import pandas as pd
-import itertools # for animated loading :)
-import threading # for animated loading :D
-import sys # also for loading :0
+import itertools # for animated loading
+import threading # for animated loading
+import sys # for animated loading
 import matplotlib.pyplot as plt
 import numpy as np
 import math
@@ -46,77 +49,96 @@ import Droplet_Detection_Selection_Frame as DDS
 import Droplet_Detection_Intensity_Tracker as DDI
 import Droplet_Detection_Grapher as DDG
 
+print('\n\n\n════════════════ *.·:·.✧ ° ❆ ° ✧.·:·.* ════════════════')
+print('         Grayscale Ice Nucleation (GIN) software         ')
+print('            Originally designed for use with:            ')
+print('Vienna Optical Droplet Crystallization Analyzer (VODCA)')
+print('              Created by: William Bae (UBC)              ') 
+print('                 [www.github.com/wbae03]              ')
+print('════════════════ *.·:·.✧ ° ❆ ° ✧.·:·.* ════════════════')
 
-print('\n\n\n═════════════ *.·:·.✧ ° ❆ ° ✧.·:·.* ═════════════')
-print('      Grayscale Ice Nucleation (GIN) software      ')
-print('         Originally designed for use with:         ')
-print('Vienna Optical Droplet Cryoscope Apparatus (VODCA) ')
-print('           Created by: William Bae (UBC)           ') 
-print('              [www.github.com/wbae03]              ')
-print('═════════════ *.·:·.✧ ° ❆ ° ✧.·:·.* ═════════════')
+# CUSTOMIZABLE PARAMETERS
 
-#size_ratio = float(input('Enter a value to scale the video by: '))
-size_ratio = 0.25
+size_ratio = 0.25 # Proportionally changes the size of image and video files used in the program.
 
+file_directory = 'Assets/'
 
-# LOAD CALIBRATION IMAGE
+# Asks user if calibration image is required
 
+calib_file = '' #  Variable to store user input of calibration image
 
-calib_file = '' # image file to be used for calibration. Determined by user input later on.
+use_calib_image = False # Condition that triggers calibration image file input
+
+ask_user_calib_ready = False # A switch to terminate the loop below.
+
+# CALIBRATING CIRCLE SIZES (if calibration with image is required)
 
 # Global variables
-drawing = False  # True if mouse is pressed
+
+drawing = False  # True when mouse is pressed on the image window
+
 sbox = []
+
 line_coords = []
+
 calib_real_length = 0
+
 calib_pixel_length = 0
+
 calib_user_ready = False
+
 calibration_ratio = 0
+
 close_calib_window = False
 
-# Asks user if calibration image is available.
-
-use_calib_image = False
-
-ask_user_calib_ready = False
-
-while not ask_user_calib_ready:
+while not ask_user_calib_ready: # While loop ensures the user prompts are repeated if the user input is invalid (ie not 'y' or 'n')
 
     ask_user_calib = input('\nDo you require calibration using an image with a known measurement (ie. using a ruler)? \nYou may instead enter a calibration ratio (image pixel length / actual micrometer length) obtained from previous calibrations.\nPress \'Y\' to load an image.\nPress \'N\' to enter a known calibration ratio value.\n\n[USER INPUT] > ')
 
-    if ask_user_calib.lower() == 'y': #lower() = makes lowercase
+    if ask_user_calib.lower() == 'y':
 
         use_calib_image = True
+
         ask_user_calib_ready = True
+
         calib_file = str(input('\n📏 Enter the name of the calibration image file:\n\n[USER INPUT] > '))
-        calib_file = 'Assets/' + calib_file
+
+        calib_file = file_directory + calib_file
+
         print("\n[SYSTEM] > Does the calibration file exist: ", os.path.exists(calib_file))
 
     elif ask_user_calib.lower() == 'n':
 
         use_calib_image = False
+
         ask_user_calib_ready = True
 
     else:
-        print('\nInvalid input. Please press \'Y\' or \'N\'.\n (Tip: if you do not require a calibration, you can just put in an arbitrary calibration value after press \'N\')')
 
+        print('\nInvalid input. Please press \'Y\' or \'N\'.\n (Tip: if you do not require a calibration, you can just put in an arbitrary calibration value after press \'N\')')
 
 if use_calib_image == True:
 
-    # Load an image
-    image = cv2.imread(calib_file)
+    image = cv2.imread(calib_file) # Program loads the image inputted
+
     temp_image = image.copy()
 
-    def on_mouse(event, x, y, flags, param):
+    def on_mouse(event, x, y, flags, param): # although flags and param are not used in this function, they must be included in the parameters as the data from mouse clicks feeds into this function and includes these parameters.
+
         global drawing, sbox, line_coords, temp_image, calib_pixel_length, calib_real_length, calib_user_ready, calibration_ratio, close_calib_window
 
-        x = math.floor(x * 1/size_ratio) # note: resizing the window size DOES NOT scale down the frames system / mouse coordinate system.. must convert the mouse values by applying a opposite scale (ie if the frame is scaled down by 0.5 of original size, then scale mouse coordinates by 1/0.5 aka x2 !!)
+        x = math.floor(x * 1/size_ratio) # note: resizing the window size DOES NOT scale down the frames system / mouse coordinate system.. must convert the mouse values by applying an opposite scale (ie if the frame is scaled down by 0.5 of original size, then scale mouse coordinates by 1/0.5 aka x2 !!)
+        
         y = math.floor(y * 1/size_ratio)
 
         if event == cv2.EVENT_LBUTTONDOWN:
+
             print('\nStart Mouse Position: [' + str(x) + ',' + str(y) + ']')
+
             sbox = [x, y]
+
             line_coords.append(sbox)
+
             drawing = True
 
         elif event == cv2.EVENT_MOUSEMOVE:
@@ -201,7 +223,7 @@ elif use_calib_image == False:
 # LOAD VIDEO
 
 file = str(input('\n🎦 Enter the name of the video:\n\n[USER INPUT] > '))
-filename = 'Assets/' + file
+filename = file_directory + file
 #filename = 'Assets/TX100_MineralOil_1to3_Test_v3.mp4'
 cap = cv2.VideoCapture(filename)
 cap1 = cv2.VideoCapture(filename)
@@ -526,6 +548,10 @@ done = True # ends the animated loading screen
 ###print('frame count', frame_count)
 ###print('frame count input', frame_count_input)
 
+use_temperature_file = False
+
+ask_user_temperature_ready = False
+
 while True: # it seems that after video analysis, the data is stored in memory :))) 
     frame_id = int(cap2.get(cv2.CAP_PROP_POS_FRAMES)) # for some reason, this doesnt start from 1 and go to the final frame, even while looping; it gives the final total frame count right away!! I suspect its because the video was alraedy read in the prev loop (data stored in memory?)
 
@@ -533,12 +559,67 @@ while True: # it seems that after video analysis, the data is stored in memory :
     intensity_difference_axes = DDG.get_intensity_difference_axes(intensity_axes)
     #print('checkpoint 1', intensity_difference_axes)
 
-
     end_time = time.time()
     elapsed_time = round(end_time - start_time, 2)
     print('\nThe analysis took: ', elapsed_time, ' seconds to complete (Efficiency: ', round(elapsed_time/duration*100, 2), ' % of time relative to the video duration)')
 
     print('\nTotal frames analyzed: ', frame_id)
+
+    while not ask_user_temperature_ready:
+
+        ask_user_temperature = input('Would you like to upload an excel file containing the temperature data? (Temperature data should correspond to elapsed experiment/video time in seconds).\n\n[USER INPUT] > ')
+        
+        if ask_user_temperature.lower() == 'y':
+
+            temperature_file = str(input('\n🌡️ Enter the name of the temperature file:\n\n[USER INPUT] > '))
+
+            temperature_file = file_directory + temperature_file
+
+            use_temperature_file = True
+
+            ask_user_temperature_ready = True
+
+            print("\n[SYSTEM] > Does the temperature file exist: ", os.path.exists(temperature_file))
+
+        elif ask_user_temperature.lower() == 'n':
+
+            use_temperature_file = False
+
+            ask_user_temperature_ready = True
+
+        else:
+
+            print('\nInvalid input. Please press \'Y\' or \'N\'.\n')
+
+    if use_temperature_file == True:
+
+        temperature_df = pd.read_csv(temperature_file)
+
+
+
+        temperature_df = temperature_df.iloc[:,0].str.split(';', expand = True) # iloc method allows us to pass the column's index position
+
+        # gets the time associated with each temperature
+
+        temperature_time = list(temperature_df.iloc[:,2].values)
+
+        temperature_time = [round(float(x), 0) for x in temperature_time] # convert list of strings to list of integers
+
+        # gets the real temperature data
+
+        temperature = list(temperature_df.iloc[:,1].values)
+
+        temperature = [float(x) for x in temperature] # convert list of strings to list of integers
+
+        #temperature_df.columns = ['Target Temperature', 'Real Temperature', 'Time']
+
+        #temperature_df[2] = temperature_df.round({'Time': 0})
+        
+        print('temperature time df check 1', temperature_time, 'temperature check', temperature)
+        
+
+
+
     
     x = input('\nTo save the data as a .csv file and to show the plotted intensity vs frame or time graphs, press [R or ENTER].\n\n[USER INPUT] > ')
     if x in 'Rr':
@@ -567,10 +648,22 @@ for i in frame_axes:
         #https://stackoverflow.com/questions/237079/how-do-i-get-file-creation-and-modification-date-times
 '''
 
+# if no temperature data is available, the frame vs change in intensity plots will be given.
+# if temperature data is given, plots temperature vs change in intensity
+
+
+
 video_seconds = []
 
 for i in video_milliseconds:
     video_seconds.append(i/1000)
+
+# gets time associated with each measured temperature
+#temperature_seconds = temperature_df.iloc[:,2]
+#print('temp', temperature_seconds)
+
+# gets temperature associated with each time
+
 
 d = {'Frame Time (seconds)': video_seconds, 'Frames Axes': frame_axes}
 #print(len(frame_axes), len(intensity_axes))
@@ -584,10 +677,27 @@ export_intensity_differences.to_csv('Saved_data/' + csv_name + '.csv')
 cap.release()
 cv2.destroyAllWindows
 
-figure, axis = plt.subplots(2, 2, figsize=(15,9)) # width, height
+figure, axis = plt.subplots(2, 3, figsize=(12,6)) # width, height
 
-DDG.plot_intensity_vs_frames(intensity_axes, frame_axes, axis, frame_count)
-DDG.plot_dintensity_vs_dframes(intensity_difference_axes, frame_axes, axis, frame_count)
+if use_temperature_file == True:
+    
+
+    temperature_axes, temperature_time_axes = DDG.get_temperature_axes(video_seconds, temperature_time, temperature)
+    temperature_axes = DDG.get_correct_temperature_axes(intensity_axes, temperature_axes)
+    intensity_axes_for_temperature = DDG.get_correct_intensity_axes(intensity_axes, temperature_axes)
+    DDG.plot_intensity_vs_temperature(intensity_axes_for_temperature, temperature_axes, axis)
+
+    DDG.plot_time_and_dintensity_heatmap(intensity_difference_axes, video_seconds, temperature_axes, temperature_time_axes, axis)
+
+    # only plot points if the time data between temperature csv file and the video time data match.
+    #paired_intensity_difference_to_temperature = DDG.get_dintensity_matched_to_temperature(intensity_difference_axes, video_seconds, temperature_df)
+    #DDG.plot_dintensity_vs_temperature(paired_intensity_difference_to_temperature, axis)
+
+if use_temperature_file == False:
+
+    DDG.plot_intensity_vs_frames(intensity_axes, frame_axes, axis, frame_count)
+    DDG.plot_dintensity_vs_dframes(intensity_difference_axes, frame_axes, axis, frame_count)
+
 DDG.plot_intensity_vs_seconds(intensity_axes, video_seconds, axis)
 DDG.plot_dintensity_vs_seconds(intensity_difference_axes, video_seconds, axis)
 
