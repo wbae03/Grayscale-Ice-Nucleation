@@ -365,7 +365,7 @@ while True:
         # selected_circles_on_frame: places only the selected circles and corresponding numerical identity on a new still frame.
 
 
-        selection_frame = DDS.selected_circles_on_frame_and_label(selection_list, selection_frame, calibration_ratio)
+        selection_frame, calib_r_list = DDS.selected_circles_on_frame_and_label(selection_list, selection_frame, calibration_ratio)
 
 
         n = 'WINDOW 2 /// SELECTED CIRCLES FOR ANALYSIS'
@@ -683,20 +683,27 @@ if use_temperature_file == True:
     
 
     temperature_axes, temperature_time_axes = DDG.get_temperature_axes(video_seconds, temperature_time, temperature)
-    temperature_axes = DDG.get_correct_temperature_axes(intensity_axes, temperature_axes)
-    intensity_axes_for_temperature = DDG.get_correct_intensity_axes(intensity_axes, temperature_axes)
-    DDG.plot_intensity_vs_temperature(intensity_axes_for_temperature, temperature_axes, axis)
+    modified_temperature_axes = DDG.get_correct_temperature_axes(intensity_axes, temperature_axes)
+    intensity_axes_for_temperature = DDG.get_correct_intensity_axes(intensity_axes, modified_temperature_axes)
+    DDG.plot_intensity_vs_temperature(intensity_axes_for_temperature, modified_temperature_axes, axis)
 
-    DDG.plot_time_and_dintensity_heatmap(intensity_difference_axes, video_seconds, temperature_axes, temperature_time_axes, axis)
+    DDG.plot_time_and_dintensity_heatmap(intensity_difference_axes, video_seconds, modified_temperature_axes, temperature_time_axes, axis)
+
+    min_intensity_all_temperatures = DDG.get_freezing_temperature(intensity_difference_axes, video_seconds, temperature_axes, temperature_time_axes)
+
+    bin_data_list, bin_edges, label_names = DDG.get_boxplot_data_by_radii(calib_r_list, min_intensity_all_temperatures)
+
+    DDG.plot_boxplot(bin_data_list, bin_edges, label_names, axis)
 
     # only plot points if the time data between temperature csv file and the video time data match.
     #paired_intensity_difference_to_temperature = DDG.get_dintensity_matched_to_temperature(intensity_difference_axes, video_seconds, temperature_df)
     #DDG.plot_dintensity_vs_temperature(paired_intensity_difference_to_temperature, axis)
 
-if use_temperature_file == False:
+#if use_temperature_file == False:
 
-    DDG.plot_intensity_vs_frames(intensity_axes, frame_axes, axis, frame_count)
-    DDG.plot_dintensity_vs_dframes(intensity_difference_axes, frame_axes, axis, frame_count)
+    
+    #DDG.plot_intensity_vs_frames(intensity_axes, frame_axes, axis, frame_count)
+    #DDG.plot_dintensity_vs_dframes(intensity_difference_axes, frame_axes, axis, frame_count)
 
 DDG.plot_intensity_vs_seconds(intensity_axes, video_seconds, axis)
 DDG.plot_dintensity_vs_seconds(intensity_difference_axes, video_seconds, axis)

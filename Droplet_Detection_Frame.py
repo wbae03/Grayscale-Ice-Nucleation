@@ -10,7 +10,7 @@ def frame_capture(i: int, cap):
 
 def frame_circles(frame):
     grayFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # grayscale to remove color noise
-    blurFrame = cv2.GaussianBlur(grayFrame, (17, 17), 0) # blur to lower background noise. 2nd p: both values must be odd. Higher = more blur.
+    blurFrame = cv2.GaussianBlur(grayFrame, (17, 17), 0) # blur to lower background noise. 2nd p: both values must be odd. Higher = more blur. Default: 17,17
     #value, thresh = cv2.threshold(blurFrame, 200, 255, cv2.THRESH_BINARY_INV) # pixels below 130 become 0, above become 255 (white)
 
     circles = cv2.HoughCircles(blurFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
@@ -19,9 +19,9 @@ def frame_circles(frame):
 
                             cv2.HOUGH_GRADIENT, 
                             1.1, # influences whether nearby circles will be merged
-                            60, # min distance between two circles' centers
-                            param1=42, # sensitivity of circle detection; High = wont find much circles
-                            param2=75, # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles
+                            200, # min distance between two circles' centers
+                            param1=10, # sensitivity of circle detection; High = wont find much circles. Default: 42
+                            param2=45, # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles. Default: 75
                             minRadius=30, # min radius of circles
                             maxRadius=200)  # max radius of circles # note to self: the radii parameters are quite important in selecting correct circles!!
     

@@ -67,6 +67,8 @@ def make_selection_list(areas_sorted: list, deselection_input_list, selection_fr
 
 def selected_circles_on_frame_and_label(selection_list: list, selection_frame, calibration_ratio):
 
+        calib_r_list = []
+
         for i in selection_list:
 
             # note x, y, r = i[0], i[1], i[2]
@@ -78,26 +80,27 @@ def selected_circles_on_frame_and_label(selection_list: list, selection_frame, c
             x = i[0]
             y = i[1]
 
-            selection_frame = cv2.putText(selection_frame, str(i[4]), (x-60, y+10), font, 1, (0, 0, 0), 8, cv2.LINE_AA) # text outline
-            selection_frame = cv2.putText(selection_frame, str(i[4]), (x-60, y+10), font, 1, (0, 255, 100), 2, cv2.LINE_AA) # i+1 so the first circle isnt labelled as '0'
+            selection_frame = cv2.putText(selection_frame, str(i[4]), (x-40, y+10), font, 1, (0, 0, 0), 8, cv2.LINE_AA) # text outline
+            selection_frame = cv2.putText(selection_frame, str(i[4]), (x-40, y+10), font, 1, (0, 255, 100), 2, cv2.LINE_AA) # i+1 so the first circle isnt labelled as '0'
 
             # radius label
 
             r = i[2] #radius in pixels
             calib_r = round(float(r) / float(calibration_ratio), 2) # radius in micrometer length
+            calib_r_list.append(calib_r)
 
             selection_frame = cv2.line(selection_frame, (x,y), (x+r, y), (0,0,255), 6)
 
-            selection_frame = cv2.putText(selection_frame, 'r=' + str(calib_r), (x+5, y-15), font, 1, (0, 0, 0), 8, cv2.LINE_AA) # text outline
-            selection_frame = cv2.putText(selection_frame, 'r=' + str(calib_r), (x+5, y-15), font, 1, (0, 255, 100), 2, cv2.LINE_AA)
+            selection_frame = cv2.putText(selection_frame, 'r=' + str(calib_r), (x+5, y-10), font, 1, (0, 0, 0), 8, cv2.LINE_AA) # text outline
+            selection_frame = cv2.putText(selection_frame, 'r=' + str(calib_r), (x+5, y-10), font, 1, (0, 255, 100), 2, cv2.LINE_AA)
 
             # circumference, as a measure of curvature (its an opened and straightened out arc length). C = 2pir
 
-            circumference = round(2 * math.pi * calib_r, 2)
+            #circumference = round(2 * math.pi * calib_r, 2)
 
-            selection_frame = cv2.putText(selection_frame, 'C=' + str(circumference), (x+5, y+35), font, 1, (0, 0, 0), 8, cv2.LINE_AA) # text outline
-            selection_frame = cv2.putText(selection_frame, 'C=' + str(circumference), (x+5, y+35), font, 1, (0, 255, 100), 2, cv2.LINE_AA) 
+            #selection_frame = cv2.putText(selection_frame, 'C=' + str(circumference), (x+5, y+35), font, 1, (0, 0, 0), 8, cv2.LINE_AA) # text outline
+            #selection_frame = cv2.putText(selection_frame, 'C=' + str(circumference), (x+5, y+35), font, 1, (0, 255, 100), 2, cv2.LINE_AA) 
 
 
             print('Circle #', i[4], ' --- Selection successful!')
-        return selection_frame
+        return selection_frame, calib_r_list

@@ -2,6 +2,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from matplotlib.ticker import MultipleLocator
 
 def get_intensity_axes(video_BGR_data):
@@ -137,7 +138,7 @@ def plot_dintensity_vs_seconds(intensity_difference_axes, video_seconds, axis): 
 
     #print('len seconds', len(seconds_x), 'len int diff', len(intensity_difference_axes))
     #plt.figure()
-    print('working intensity diff', intensity_difference_axes)
+    #print('working intensity diff', intensity_difference_axes)
 
     for i in range(len(intensity_difference_axes)):
 
@@ -180,10 +181,11 @@ def get_temperature_axes(video_seconds, temperature_time, temperature):
         if temperature_time[i] in int_video_seconds:
 
             temperature_axes.append(float(temperature[i])) # add the corresponding temperature data to the axes to be plotted
-            temperature_time_axes.append(temperature_time[i])
+            temperature_time_axes.append(float(temperature_time[i]))
             #print('temp this', temperature[i], 'temp time this', temperature_time[i], 'vid time this', video_seconds)
 
     #print('temp axes final', temperature_axes)
+    print('temp axes', temperature_axes, len(temperature_axes), 'temp time axes', temperature_time_axes, len(temperature_time_axes))
 
     return temperature_axes, temperature_time_axes
 
@@ -201,18 +203,18 @@ def get_correct_temperature_axes(intensity_axes, temperature_axes):
 
     return temperature_axes
 
-def get_correct_intensity_axes(intensity_axes, temperature_axes):
+def get_correct_intensity_axes(intensity_axes, modified_temperature_axes):
 
     intensity_axes_for_temperature = []
 
-    if len(intensity_axes[0]) > len(temperature_axes): # if the video duration is shorter than the temperature probe data measurement duration...
+    if len(intensity_axes[0]) > len(modified_temperature_axes): # if the video duration is shorter than the temperature probe data measurement duration...
 
 
         #print('int axes larger than temp axes!!:', intensity_axes[0], 'adfssadf', temperature_axes)
 
         for i in range(len(intensity_axes)):
 
-            hold_intensity_axes_for_temperature = intensity_axes[i][0 : len(temperature_axes)]
+            hold_intensity_axes_for_temperature = intensity_axes[i][0 : len(modified_temperature_axes)]
             intensity_axes_for_temperature.append(hold_intensity_axes_for_temperature)
 
     #print('numb 2', hold_intensity_axes_for_temperature)
@@ -223,16 +225,16 @@ def get_correct_intensity_axes(intensity_axes, temperature_axes):
 
 
 
-def plot_intensity_vs_temperature(intensity_axes, temperature_axes, axis):
+def plot_intensity_vs_temperature(intensity_axes_for_temperature, modified_temperature_axes, axis):
     
     #print('temp axessss:', temperature_axes, 'intensity axessss:', intensity_axes)
 
-    for i in range(len(intensity_axes)):
+    for i in range(len(intensity_axes_for_temperature)):
         #print('temp axessss66666:', temperature_axes, 'intensity axessss66666:', intensity_axes[i])
 
         #plt.figure()
         #plt.plot(frame_x, intensity_axes[i], label = 'Circle #' + str(i+1))
-        axis[1, 0].plot(temperature_axes, intensity_axes[i], label = 'Circle #' + str(i+1))
+        axis[1, 0].plot(modified_temperature_axes, intensity_axes_for_temperature[i], label = 'Circle #' + str(i+1))
     
     
     axis[1, 0].set_title('Grayscale Intensity vs Temperature (Celsius)')
@@ -285,14 +287,134 @@ def plot_time_and_dintensity_heatmap(dintensity_axes, video_seconds, temperature
     # create a second x-axis above the plot using the twin function which creates an x axis with the same y axis
     ax2 = axis[0, 2].twiny()
 
+    # customizable values
+
+    temp_interval = 3
+
     # IF TEMPERATURE DATA EXCEEDS LENGTH OF VIDEO THIS WILL ALLOW GRAPHING:
     #print('before manip,', len(temperature_axes), 'vid secs', len(video_seconds))
     #temperature = temperature[:len(video_seconds)] # get all elements before the length of elements in video secs
-    ax2.set_xticks(temperature_time_axes[::20]) # only use every 20th element
+    ax2.set_xticks(temperature_time_axes[::temp_interval]) # only use every 20th element
     #print('hffjfgghkghg temp lngth', len(temperature_axes))
-    ax2.set_xticklabels(temperature_axes[::20], fontsize=10, rotation=45, ha='left')
+    ax2.set_xticklabels(temperature_axes[::temp_interval], fontsize=10, rotation=45, ha='left')
     ax2.set_xlabel('Temperature (C)', fontsize=12) 
 
     axis[0,2].spines[:].set_visible(False)
 
     return
+
+def get_freezing_temperature(intensity_difference_axes, video_seconds, temperature_axes, temperature_time_axes):  # global min of derivative is the largest change towards a black colour = freezing event
+
+    min_intensity_all_temperatures = []
+
+    for i in range(len(intensity_difference_axes)):
+
+        min_intensity_index = intensity_difference_axes[i].index(min(intensity_difference_axes[i]))
+        min_intensity_video_time = round(video_seconds[min_intensity_index])
+
+        ###
+
+        print('temp axes2', temperature_axes, len(temperature_axes), 'temp time axes2', temperature_time_axes, len(temperature_time_axes))
+
+        for t in range(len(temperature_time_axes)):
+
+            if min_intensity_video_time - temperature_time_axes[t] >= 0 and min_intensity_video_time - temperature_time_axes[t+1] < 0: # locating the two temperature time values that the video time value of the change in intensity lies between
+
+                mid_point_of_tempperature_values = (temperature_time_axes[t+1] - temperature_time_axes[t]) / 2 # find mid point so I can round the vid time to the nearest temperature time data point
+
+                if min_intensity_video_time <= temperature_time_axes[t] + mid_point_of_tempperature_values: # if vid time is closer to the left most boundary of temp time datas
+                    
+                    # self note: whatever the index of the closest temperature time axis value is, the corresponding temperature axis value will have the same index. 
+                    
+                    min_intensity_temperature = temperature_axes[t]
+
+                    min_intensity_all_temperatures.append(min_intensity_temperature)
+
+                elif min_intensity_video_time > temperature_time_axes[t] + mid_point_of_tempperature_values: 
+
+                    min_intensity_temperature = temperature_axes[t+1]
+
+                    min_intensity_all_temperatures.append(min_intensity_temperature)
+
+                #else:
+
+                    #print('ERROR 1: in getting the freezing temperature!', min_intensity_video_time, temperature_time_axes[t], temperature_time_axes[t+1])
+
+
+            # QUALITY CONTROL STEP: ENSURES VID TIME AND TEMP TIME ARE IN SYNC:: print('min int time:', min_intensity_time, 'temp time axes', temperature_time_axes.index(min_intensity_time))
+            #min_intensity_temperatures = min_intensity_temperatures.append(temperature_axes[min_intensity_time])
+        #except: 
+            #print('min int time:', min_intensity_time, 'temp time axes', temperature_time_axes.index(min_intensity_time))
+            #print('raaaa', temperature_axes[min_intensity_time])
+
+            #print('Error in finding minimum intensity change...')
+        #min_intensity_differences.append(min_intensity)
+    
+    #print(min_intensity_all_temperatures)
+    return min_intensity_all_temperatures
+
+
+def get_boxplot_data_by_radii(calib_r_list, min_intensity_all_temperatures):
+
+    #Customizable things:
+    label_names = ['A', 'B', 'C']
+    amt_of_equal_sized_bins = 3
+
+    print('calib r list', len(calib_r_list), calib_r_list, 'min intensity temp', len(min_intensity_all_temperatures), min_intensity_all_temperatures)
+
+    # Create a DataFrame from the input list
+    df = pd.DataFrame({'radii': calib_r_list, 'min_intensity_temperatures': min_intensity_all_temperatures})
+    
+    # Use pd.cut to bin the data into 3 categories labeled 'A', 'B', 'C'
+    df['bins'], bin_edges = pd.cut(df['radii'], amt_of_equal_sized_bins, labels=label_names, retbins=True)
+    
+    # Print the original list and the bin edges
+    print("Original list:")
+    print(calib_r_list)
+    print("\nBin edges:")
+    print(bin_edges)
+    
+    # Group by the 'bins' column
+    grouped = df.groupby('bins', observed=True)
+    
+    bin_data_list = []
+
+    # Access values in each bin and print them
+    for bin_label in label_names:
+        print(f"\nValues in bin '{bin_label}':")
+        bin_data = grouped.get_group(bin_label)
+        print(bin_data)
+    
+        bin_data_list.append(bin_data[['radii', 'min_intensity_temperatures']].values.tolist())
+
+    
+    print('bin data list', bin_data_list)
+    return bin_data_list, bin_edges, label_names # bin data list contains the data sorted by radii with their associated freezing temperature
+
+#def convert_to_boxplot_data_by_temperature(bin_data_list)
+
+def plot_boxplot(bin_data_list, bin_edges, label_names, axis):
+
+    boxp = axis[1,1]
+
+    freezing_temperatures = []
+
+    for i in range(len(bin_data_list)):
+
+        freezing_temperature_per_bin = []
+
+        for t in range(len(bin_data_list[i])):
+
+            print('freezing temp per bin', bin_data_list[i][t][1])
+            freezing_temperature_per_bin.append(bin_data_list[i][t][1])
+
+        freezing_temperatures.append(freezing_temperature_per_bin)
+    
+    print('freezing temps', freezing_temperatures)
+
+
+    boxp.boxplot(freezing_temperatures, showmeans=True)
+    boxp.set_xticklabels(label_names)
+    boxp.set_xlabel('Bins')
+    boxp.set_ylabel('Freezing Temperature (C)')
+    boxp.set_title('Boxplots of Freezing Activity Based on Radius')
