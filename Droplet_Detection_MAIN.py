@@ -51,8 +51,12 @@ import Droplet_Detection_Frame as DDF
 import Droplet_Detection_Selection_Frame as DDS
 import Droplet_Detection_Grapher as DDG
 
-tk.Tk().wm_attributes('-topmost', 1) # makes file directory top most
-tk.Tk().withdraw() # this supresses the tk window... ## part of the import if you are not using other tkinter functions
+# Create a single instance of Tk
+root = tk.Tk()
+# Set the window attributes
+root.wm_attributes('-topmost', 1)
+# Withdraw the window
+root.withdraw()
 
 
 RED = "\33[91m"
@@ -164,7 +168,7 @@ if use_calib_image == True:
 
         if event == cv2.EVENT_LBUTTONDOWN:
 
-            print(f'\n{RED}[PROGRAM] > {END}Start Mouse Position: [' + str(x) + ',' + str(y) + ']')
+            print(f'\n{RED}[PROGRAM] > {END}Start Mouse Position: {YELLOW}[' + str(x) + ',' + str(y) + f']{END}')
 
             sbox = [x, y]
 
@@ -179,7 +183,7 @@ if use_calib_image == True:
                 #print('drawing! initial xy:', sbox, 'final xy:', x, y)
 
         elif event == cv2.EVENT_LBUTTONUP:
-            print(f'{RED}[PROGRAM] > {END}End Mouse Position: [' + str(x) + ',' + str(y) + ']')
+            print(f'\n{RED}[PROGRAM] > {END}End Mouse Position: {YELLOW}[' + str(x) + ',' + str(y) + f']{END}')
             ebox = [x, y]
             line_coords.append(ebox)
             drawing = False
@@ -780,4 +784,5 @@ end_banner = f'''\n
 '''
 print(end_banner)
 plt.show()
+root.destroy() # destroy tkinter windows
 
