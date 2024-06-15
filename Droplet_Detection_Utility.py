@@ -17,7 +17,7 @@ def make_appropriate_window_size(frame, cap):
         width = int(cap.get(3))
         height = int(cap.get(4))
 
-        target_resolution_x = 960
+        target_resolution_x = 600
         #target_resolution_y = height / (width/960)
 
         ratio_x = target_resolution_x / width

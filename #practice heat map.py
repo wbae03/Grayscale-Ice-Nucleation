@@ -1,25 +1,64 @@
-#practice heat map
+#practice Gooey
 
-import numpy as np
-import matplotlib.pyplot as plt
+import tkinter as tk
+from tkinter.filedialog import askopenfilename
+import cv2
 
 
-x_axes = (1,2,3,4,5,6,7,8)
-y_axes = ('circle 1', 'circle 2', 'circle 3')
+tk.Tk().withdraw() # part of the import if you are not using other tkinter functions
 
-heatmap = ((8,8,8,8,8,8,8,8), (9,9,9,9,9,9,9,10), (8,8,8,8,8,8,8,8))
+fn = askopenfilename()
+print("user chose", fn)
+#from typing import Mapping, Any, Optional
+#from gooey.types import PublicGooeyState
 
-data = np.array(heatmap)
+'''
+# Gooey Documentation: https://github.com/chriskiehl/Gooey?tab=readme-ov-file#installation-instructions
 
-#data = np.array([x_axes], [y_axes])
-#data = np.random.random((12, 12))
-plt.imshow(data, cmap = 'jet')
+args = []
 
-plt.colorbar()
+@Gooey  (program_name='Example App', header_bg_color='blue') # GUI python decorator
 
-plt.yticks((0, 1, 2), y_axes)
 
-plt.title('fadfsa')
-plt.xlabel('x axis')
-plt.xlabel('y axis')
-plt.show()
+def main():
+
+    global args
+    parser = GooeyParser()
+
+    parser.add_argument('num_1', action='store', help='description 1', metavar='metavar desc')
+    parser.add_argument('num_2', action='store', help='description 2', metavar='metavar desc 2')
+    parser.add_argument('--num_2', action='store', help='description 2', metavar='metavar desc 2')
+
+
+
+    parser.add_argument('filename', widget='FileChooser')
+
+
+    args = parser.parse_args() # passes arguements; comes at the end
+
+    while True:
+
+        image = cv2.imread(args.filename)
+        cv2.namedWindow('test')
+        cv2.imshow('test', image)
+
+        if cv2.waitKey(1) & 0xFF == 27:  # Exit on pressing 'ESC'
+            break
+
+
+
+    print(int(args.num_1) + int(args.num_2))
+
+#ef on_success
+
+main()
+
+while True:
+
+    image = cv2.imread(args.filename)
+    cv2.namedWindow('test222')
+    cv2.imshow('test222', image)
+
+    if cv2.waitKey(0):  # Exit on pressing 'ESC'
+        break
+'''

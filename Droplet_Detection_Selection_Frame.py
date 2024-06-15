@@ -3,6 +3,16 @@ import cv2
 import numpy as np
 import math
 
+RED = "\33[91m"
+BLUE = "\33[94m"
+GREEN = "\033[32m"
+YELLOW = "\033[93m"
+PURPLE = '\033[0;35m' 
+CYAN = "\033[36m"
+LBLUE = "\033[94m"
+END = "\033[0m"
+BOLD = "\033[1m"
+
 def frame_overlay_select():
 
     user_ready = False
@@ -12,7 +22,7 @@ def frame_overlay_select():
         
         #print('The deselected circles will be: ', selection_list)
         
-        print('\nPlease enter an integer representing the circle # that you wish to deselect. \nCurrently, the deselected circle(s) entered are: ', deselection_input_list, '\nOtherwise, press [R or ENTER] to confirm the chosen deselected circles, if any.\n\n[USER INPUT] > ')
+        print(f'\n{RED}[PROGRAM] > {END}Please enter an integer representing the circle # that you wish to deselect. \nCurrently, the {YELLOW}deselected circle(s){END} entered are: {YELLOW}{BOLD}', deselection_input_list, f'{END}\nOtherwise, press {YELLOW}[ENTER]{END} to confirm the chosen deselected circles, if any.\n\n{GREEN}[USER INPUT] > {END}')
         user_input = input()
 
         if user_input.isnumeric():
@@ -23,7 +33,7 @@ def frame_overlay_select():
             user_ready = True
 
         else:
-            print('================\nInvalid input. Please enter a single integer value at a time.\n================')
+            print(f'{RED}[PROGRAM] > {END}\nInvalid input. Please enter a single integer value at a time.\n')
     
     return deselection_input_list
 
@@ -37,7 +47,7 @@ def make_selection_list(areas_sorted: list, deselection_input_list, selection_fr
         for i in areas_sorted:
             #print('i value:', i, type(i))
             if i[4] in deselection_input_list: # is the circle identity a part of the deselection list made by the user?
-                print('Circle #', i[4], ' --- Deselection successful!')
+                print(f'{RED}Circle #', i[4], f' --- Deselection successful!{END}')
                 continue
             
             else:
@@ -61,7 +71,7 @@ def make_selection_list(areas_sorted: list, deselection_input_list, selection_fr
 
 
     else:
-        return(print('Error: The list for areas_sorted is empty!!'))
+        return(print(f'{RED}[PROGRAM] > {END}Error: The list for areas_sorted is empty!!'))
     
     return selection_list
 
@@ -102,5 +112,5 @@ def selected_circles_on_frame_and_label(selection_list: list, selection_frame, c
             #selection_frame = cv2.putText(selection_frame, 'C=' + str(circumference), (x+5, y+35), font, 1, (0, 255, 100), 2, cv2.LINE_AA) 
 
 
-            print('Circle #', i[4], ' --- Selection successful!')
+            print(f'{GREEN}Circle #', i[4], f' --- Selection successful!{END}')
         return selection_frame, calib_r_list

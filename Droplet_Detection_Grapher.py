@@ -23,18 +23,18 @@ def get_intensity_axes(video_BGR_data):
 
 def plot_intensity_vs_frames(intensity_axes, frame_axes, axis, frame_count):
 
-    #plt.figure()
+    ax = axis[0,0]
     
     for i in range(len(intensity_axes)):
         #plt.figure()
         #plt.plot(frame_x, intensity_axes[i], label = 'Circle #' + str(i+1))
-        axis[0, 0].plot(frame_axes, intensity_axes[i], label = 'Circle #' + str(i+1))
+        ax.plot(frame_axes, intensity_axes[i], label = 'Circle #' + str(i+1))
     
     
-    axis[0, 0].set_title('Grayscale Intensity Every ' + str(frame_count) + ' Frames')
-    axis[0, 0].set_xlabel('Frames')
-    axis[0, 0].set_ylabel('Grayscale Intensity')
-    axis[0, 0].legend(fontsize='x-small')
+    ax.set_title('Grayscale Intensity Every ' + str(frame_count) + ' Frames')
+    ax.set_xlabel('Frames')
+    ax.set_ylabel('Grayscale Intensity')
+    ax.legend(fontsize='x-small')
 
     #plt.xlabel('Frames')
     #plt.ylabel('Grayscale Intensity (0 = darkest black)')
@@ -49,9 +49,6 @@ def plot_intensity_vs_frames(intensity_axes, frame_axes, axis, frame_count):
 def get_intensity_difference_axes(intensity_axes):
 
     intensity_difference_axes = []
-
-    #print('mark')
-
 
     for i in range(len(intensity_axes)):
        
@@ -79,7 +76,7 @@ def plot_dintensity_vs_dframes(intensity_difference_axes, frame_axes, axis, fram
 
     frame_x = frame_axes[0: -1] # get entire list except for the last element (must match amount of elements in frame axis to agree with difference axis)
 
-    #plt.figure()
+    ax = axis[1,0]
     
     for i in range(len(intensity_difference_axes)):
 
@@ -87,12 +84,12 @@ def plot_dintensity_vs_dframes(intensity_difference_axes, frame_axes, axis, fram
         
 
         #plt.plot(frame_x, intensity_difference_axes[i], label = 'Circle #' + str(i+1))
-        axis[1, 0].plot(frame_x, intensity_difference_axes[i], label = 'Circle #' + str(i+1))
+        ax.plot(frame_x, intensity_difference_axes[i], label = 'Circle #' + str(i+1))
     
-    axis[1, 0].set_title('Grayscale Intensity Difference Every ' + str(frame_count) + ' Frames')
-    axis[1, 0].set_xlabel('Frames')
-    axis[1, 0].set_ylabel('Grayscale Intensity Difference')
-    axis[1, 0].legend(fontsize='x-small')
+    ax.set_title('Grayscale Intensity Difference Every ' + str(frame_count) + ' Frames')
+    ax.set_xlabel('Frames')
+    ax.set_ylabel('Grayscale Intensity Difference')
+    ax.legend(fontsize='x-small')
 
     '''
     plt.xlabel('Frames')
@@ -109,18 +106,18 @@ def plot_dintensity_vs_dframes(intensity_difference_axes, frame_axes, axis, fram
 
 def plot_intensity_vs_seconds(intensity_axes, video_seconds, axis):
 
-    #plt.figure()
+    ax = axis[0,0]
     
     for i in range(len(intensity_axes)):
         #plt.figure()
         #plt.plot(frame_x, intensity_axes[i], label = 'Circle #' + str(i+1))
-        axis[0, 0].plot(video_seconds, intensity_axes[i], label = 'Circle #' + str(i+1))
+        ax.plot(video_seconds, intensity_axes[i], label = 'Circle #' + str(i+1))
     
     
-    axis[0, 0].set_title('Grayscale Intensity Every ' + str(video_seconds[1]) + ' Seconds')
-    axis[0, 0].set_xlabel('Seconds')
-    axis[0, 0].set_ylabel('Grayscale Intensity')
-    axis[0, 0].legend(fontsize='x-small', loc='lower left')
+    ax.set_title('Grayscale Intensity Every ' + str(video_seconds[1]) + ' Seconds')
+    ax.set_xlabel('Seconds')
+    ax.set_ylabel('Grayscale Intensity')
+    ax.legend(fontsize='x-small', loc='lower left')
 
     #plt.xlabel('Frames')
     #plt.ylabel('Grayscale Intensity (0 = darkest black)')
@@ -136,9 +133,7 @@ def plot_dintensity_vs_seconds(intensity_difference_axes, video_seconds, axis): 
 
     seconds_x = video_seconds[0: -1] # get entire list except for the last element (must match amount of elements in frame axis to agree with difference axis)
 
-    #print('len seconds', len(seconds_x), 'len int diff', len(intensity_difference_axes))
-    #plt.figure()
-    #print('working intensity diff', intensity_difference_axes)
+    ax = axis[1,0]
 
     for i in range(len(intensity_difference_axes)):
 
@@ -146,12 +141,12 @@ def plot_dintensity_vs_seconds(intensity_difference_axes, video_seconds, axis): 
         
 
         #plt.plot(frame_x, intensity_difference_axes[i], label = 'Circle #' + str(i+1))
-        axis[0, 1].plot(seconds_x, intensity_difference_axes[i], label = 'Circle #' + str(i+1))
+        ax.plot(seconds_x, intensity_difference_axes[i], label = 'Circle #' + str(i+1))
     
-    axis[0, 1].set_title('Grayscale Intensity Difference Every ' + str(video_seconds[1]) + ' Seconds')
-    axis[0, 1].set_xlabel('Seconds')
-    axis[0, 1].set_ylabel('Grayscale Intensity Difference')
-    axis[0, 1].legend(fontsize='x-small', loc='lower left')
+    ax.set_title('Grayscale Intensity Difference Every ' + str(video_seconds[1]) + ' Seconds')
+    ax.set_xlabel('Seconds')
+    ax.set_ylabel('Grayscale Intensity Difference')
+    ax.legend(fontsize='x-small', loc='lower left')
 
     
     #plt.xlabel('Frames')
@@ -185,7 +180,7 @@ def get_temperature_axes(video_seconds, temperature_time, temperature):
             #print('temp this', temperature[i], 'temp time this', temperature_time[i], 'vid time this', video_seconds)
 
     #print('temp axes final', temperature_axes)
-    print('temp axes', temperature_axes, len(temperature_axes), 'temp time axes', temperature_time_axes, len(temperature_time_axes))
+    #print('temp axes', temperature_axes, len(temperature_axes), 'temp time axes', temperature_time_axes, len(temperature_time_axes))
 
     return temperature_axes, temperature_time_axes
 
@@ -224,23 +219,25 @@ def get_correct_intensity_axes(intensity_axes, modified_temperature_axes):
     
 
 
-
+'''
 def plot_intensity_vs_temperature(intensity_axes_for_temperature, modified_temperature_axes, axis):
     
     #print('temp axessss:', temperature_axes, 'intensity axessss:', intensity_axes)
+
+    ax = [0,1]
 
     for i in range(len(intensity_axes_for_temperature)):
         #print('temp axessss66666:', temperature_axes, 'intensity axessss66666:', intensity_axes[i])
 
         #plt.figure()
         #plt.plot(frame_x, intensity_axes[i], label = 'Circle #' + str(i+1))
-        axis[1, 0].plot(modified_temperature_axes, intensity_axes_for_temperature[i], label = 'Circle #' + str(i+1))
+        ax.plot(modified_temperature_axes, intensity_axes_for_temperature[i], label = 'Circle #' + str(i+1))
     
     
-    axis[1, 0].set_title('Grayscale Intensity vs Temperature (Celsius)')
-    axis[1, 0].set_xlabel('Temperature (C)')
-    axis[1, 0].set_ylabel('Grayscale Intensity')
-    axis[1, 0].legend(fontsize='x-small', loc='lower left')
+    ax.set_title('Grayscale Intensity vs Temperature (Celsius)')
+    ax.set_xlabel('Temperature (C)')
+    ax.set_ylabel('Grayscale Intensity')
+    ax.legend(fontsize='x-small', loc='lower left')
 
     #plt.xlabel('Frames')
     #plt.ylabel('Grayscale Intensity (0 = darkest black)')
@@ -256,36 +253,37 @@ def plot_intensity_vs_temperature(intensity_axes_for_temperature, modified_tempe
 
 
 #im so dumb. literally, just convert the video_seconds axis to a temperature axes.... 
-
+'''
 def plot_time_and_dintensity_heatmap(dintensity_axes, video_seconds, temperature_axes, temperature_time_axes, axis):
 
+    ax = axis[0,1]
     # Create heatmap using imshow
-    heatmap = axis[0, 2].imshow(dintensity_axes, cmap='jet', aspect='auto', interpolation='none')
+    heatmap = ax.imshow(dintensity_axes, cmap='jet', aspect='auto', interpolation='none')
     
     # Add colorbar to the heatmap
-    cbar = plt.colorbar(heatmap, ax=axis[0, 2])
+    cbar = plt.colorbar(heatmap, ax=ax)
     cbar.set_label('Grayscale Intensity Difference')
     
     # Generate labels for y-ticks
     circle_label = ['Circle ' + str(i+1) for i in range(len(dintensity_axes))]
     
     # Set y-ticks and labels
-    axis[0, 2].set_yticks(range(len(dintensity_axes)))
-    axis[0, 2].set_yticklabels(circle_label, fontsize=10)
+    ax.set_yticks(range(len(dintensity_axes)))
+    ax.set_yticklabels(circle_label, fontsize=10)
     
     # Set x-ticks to every 10 units and labels
     #axis[0, 2].xaxis.set_major_locator(MultipleLocator(10))
-    axis[0, 2].set_xticks(range(0, len(video_seconds), 10))  # Ensure ticks every 50 units
-    axis[0, 2].set_xticklabels(video_seconds[::10], fontsize=7, rotation=45, ha='right')
+    ax.set_xticks(range(0, len(video_seconds), 10))  # Ensure ticks every 50 units
+    ax.set_xticklabels(video_seconds[::10], fontsize=7, rotation=45, ha='right')
     # the resulting ticks will be the time of analysis * the step interval defined above
 
     # Set titles and labels
-    axis[0, 2].set_title('')
-    axis[0, 2].set_xlabel('Time (seconds)')
-    axis[0, 2].set_ylabel('Circles')
+    ax.set_title('')
+    ax.set_xlabel('Time (seconds)')
+    ax.set_ylabel('Circles')
 
     # create a second x-axis above the plot using the twin function which creates an x axis with the same y axis
-    ax2 = axis[0, 2].twiny()
+    ax2 = axis[0,1].twiny()
 
     # customizable values
 
@@ -298,8 +296,6 @@ def plot_time_and_dintensity_heatmap(dintensity_axes, video_seconds, temperature
     #print('hffjfgghkghg temp lngth', len(temperature_axes))
     ax2.set_xticklabels(temperature_axes[::temp_interval], fontsize=10, rotation=45, ha='left')
     ax2.set_xlabel('Temperature (C)', fontsize=12) 
-
-    axis[0,2].spines[:].set_visible(False)
 
     return
 
@@ -314,7 +310,7 @@ def get_freezing_temperature(intensity_difference_axes, video_seconds, temperatu
 
         ###
 
-        print('temp axes2', temperature_axes, len(temperature_axes), 'temp time axes2', temperature_time_axes, len(temperature_time_axes))
+        #print('temp axes2', temperature_axes, len(temperature_axes), 'temp time axes2', temperature_time_axes, len(temperature_time_axes))
 
         for t in range(len(temperature_time_axes)):
 
@@ -356,11 +352,12 @@ def get_freezing_temperature(intensity_difference_axes, video_seconds, temperatu
 
 def get_boxplot_data_by_radii(calib_r_list, min_intensity_all_temperatures):
 
+
     #Customizable things:
     label_names = ['A', 'B', 'C']
     amt_of_equal_sized_bins = 3
 
-    print('calib r list', len(calib_r_list), calib_r_list, 'min intensity temp', len(min_intensity_all_temperatures), min_intensity_all_temperatures)
+    #print('calib r list', len(calib_r_list), calib_r_list, 'min intensity temp', len(min_intensity_all_temperatures), min_intensity_all_temperatures)
 
     # Create a DataFrame from the input list
     df = pd.DataFrame({'radii': calib_r_list, 'min_intensity_temperatures': min_intensity_all_temperatures})
@@ -369,10 +366,10 @@ def get_boxplot_data_by_radii(calib_r_list, min_intensity_all_temperatures):
     df['bins'], bin_edges = pd.cut(df['radii'], amt_of_equal_sized_bins, labels=label_names, retbins=True)
     
     # Print the original list and the bin edges
-    print("Original list:")
-    print(calib_r_list)
-    print("\nBin edges:")
-    print(bin_edges)
+    #print("Original list:")
+    #print(calib_r_list)
+    #print("\nBin edges:")
+    #print(bin_edges)
     
     # Group by the 'bins' column
     grouped = df.groupby('bins', observed=True)
@@ -381,14 +378,14 @@ def get_boxplot_data_by_radii(calib_r_list, min_intensity_all_temperatures):
 
     # Access values in each bin and print them
     for bin_label in label_names:
-        print(f"\nValues in bin '{bin_label}':")
+        #print(f"\nValues in bin '{bin_label}':")
         bin_data = grouped.get_group(bin_label)
-        print(bin_data)
+        #print(bin_data)
     
         bin_data_list.append(bin_data[['radii', 'min_intensity_temperatures']].values.tolist())
 
     
-    print('bin data list', bin_data_list)
+    #print('bin data list', bin_data_list)
     return bin_data_list, bin_edges, label_names # bin data list contains the data sorted by radii with their associated freezing temperature
 
 #def convert_to_boxplot_data_by_temperature(bin_data_list)
@@ -405,12 +402,12 @@ def plot_boxplot(bin_data_list, bin_edges, label_names, axis):
 
         for t in range(len(bin_data_list[i])):
 
-            print('freezing temp per bin', bin_data_list[i][t][1])
+            #print('freezing temp per bin', bin_data_list[i][t][1])
             freezing_temperature_per_bin.append(bin_data_list[i][t][1])
 
         freezing_temperatures.append(freezing_temperature_per_bin)
     
-    print('freezing temps', freezing_temperatures)
+    #print('freezing temps', freezing_temperatures)
 
 
     boxp.boxplot(freezing_temperatures, showmeans=True)
