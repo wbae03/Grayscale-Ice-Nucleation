@@ -70,17 +70,15 @@ def banner():
     {CYAN}
 
 
-                                                                                                
-   _____                               _        _____       _                 _ _           _   _            _            _   _             
-  / ____|                             | |      |_   _|     | |               (_) |         | \ | |          | |          | | (_)            
- | |  __ _ __ __ _ _   _ ___  ___ __ _| | ___    | |  _ __ | |_ ___ _ __  ___ _| |_ _   _  |  \| |_   _  ___| | ___  __ _| |_ _  ___  _ __  
- | | |_ | '__/ _` | | | / __|/ __/ _` | |/ _ \   | | | '_ \| __/ _ \ '_ \/ __| | __| | | | | . ` | | | |/ __| |/ _ \/ _` | __| |/ _ \| '_ \ 
- | |__| | | | (_| | |_| \__ \ (_| (_| | |  __/  _| |_| | | | ||  __/ | | \__ \ | |_| |_| | | |\  | |_| | (__| |  __/ (_| | |_| | (_) | | | |
-  \_____|_|  \__,_|\__, |___/\___\__,_|_|\___| |_____|_| |_|\__\___|_| |_|___/_|\__|\__, | |_| \_|\__,_|\___|_|\___|\__,_|\__|_|\___/|_| |_|
-                    __/ |                                                            __/ |                                                  
-                   |___/                                                            |___/                                                   
+    
+   ___                               _         _____               __            _            _   _             
+  / _ \_ __ __ _ _   _ ___  ___ __ _| | ___    \_   \___ ___    /\ \ \_   _  ___| | ___  __ _| |_(_) ___  _ __  
+ / /_\/ '__/ _` | | | / __|/ __/ _` | |/ _ \    / /\/ __/ _ \  /  \/ / | | |/ __| |/ _ \/ _` | __| |/ _ \| '_ \ 
+/ /_\\\| | | (_| | |_| \__ \ (_| (_| | |  __/ /\/ /_| (_|  __/ / /\  /| |_| | (__| |  __/ (_| | |_| | (_) | | | |
+\____/|_|  \__,_|\__, |___/\___\__,_|_|\___| \____/ \___\___| \_\ \/  \__,_|\___|_|\___|\__,_|\__|_|\___/|_| |_|
+                 |___/                                                                                          
 
-            > {END}William Bae | NBD Group @ UBC Chemistry              {GREEN}> {END}www.github.com/wbae03                 {GREEN}> {END}Created 24/06/14
+    > {END}William Bae | NBD Group @ UBC Chemistry     {GREEN}> {END}www.github.com/wbae03     {GREEN}> {END}Created 24/06/14
 
 
     '''
@@ -705,7 +703,7 @@ for i in video_milliseconds:
 cap.release()
 cv2.destroyAllWindows
 
-figure, axis = plt.subplots(2, 2, figsize=(20,10)) # width, height
+figure, axis = plt.subplots(2, 2, figsize=(30,15)) # width, height
 
 if use_temperature_file == True:
     
@@ -743,7 +741,23 @@ export_intensity_differences = pd.DataFrame(d)
 for i in range(len(intensity_axes)):
     export_intensity_differences['Avg Grayscale Intensity of Circle' + str(i+1)] = intensity_axes[i]
 
-export_radii_freezing = pd.DataFrame(bin_data_list)
+#export_radii_freezing = pd.DataFrame(bin_data_list)
+
+circle_radii = []
+circle_freezing_temperatures = []
+
+print(bin_data_list)
+
+for i in range(len(bin_data_list)):
+
+    for t in range(len(bin_data_list[i])):
+
+        circle_radii.append(bin_data_list[i][t][0])
+        circle_freezing_temperatures.append(bin_data_list[i][t][1])
+
+c = {'Radii (um)': circle_radii, 'Freezing Temperature (C)': circle_freezing_temperatures}
+export_radii_freezing = pd.DataFrame(c)
+print('cc', c)
 
 os.environ["USERPROFILE"]
 save_path = os.path.join(os.environ["USERPROFILE"], "Desktop")
