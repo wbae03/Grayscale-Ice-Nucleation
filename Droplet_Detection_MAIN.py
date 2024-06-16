@@ -45,11 +45,14 @@ import math
 import tkinter as tk
 from tkinter.filedialog import askopenfilename
 import ntpath
+from colorama import init
 
 import Droplet_Detection_Utility as DDU
 import Droplet_Detection_Frame as DDF
 import Droplet_Detection_Selection_Frame as DDS
 import Droplet_Detection_Grapher as DDG
+
+init() # related to colorama, to enable ANSI escape codes for color
 
 # Create a single instance of Tk
 root = tk.Tk()
