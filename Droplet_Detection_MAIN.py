@@ -381,9 +381,8 @@ while True: # makes sure the video loaded + frames are able to be captured
     if cv2.waitKey(1) == ord('r'): #27: # Escape key ASCII is 27. If R is pressed on video instead of console.
         break
 
-
 stop_reiterating = False # reset this to prepare for use in the next loop
-
+deselection_input_list = [] # this list is initially empty. When the loop below occurs, deselected circles are appended.
 
 
 while True:
@@ -397,7 +396,7 @@ while True:
         # could try deleting circles and reshowing screen?
     
     if stop_reiterating == False:
-        deselection_input_list = DDS.frame_overlay_select()
+        deselection_input_list, user_ready = DDS.frame_overlay_select(deselection_input_list)
 
         # make_selection_list: makes a list containing the circles that will be analyzed. This fn removes the data for deselected circles.
 
@@ -409,24 +408,30 @@ while True:
         selection_frame, calib_r_list = DDS.selected_circles_on_frame_and_label(selection_list, selection_frame, calibration_ratio)
 
 
-        n = 'WINDOW 2 /// SELECTED CIRCLES FOR ANALYSIS'
-        cv2.namedWindow(n)
-        cv2.setWindowProperty(n, cv2.WND_PROP_TOPMOST, 1)
-        cv2.moveWindow(n,10,50)
-        DDU.show_window(n, selection_frame, size_ratio, cap1, filename)
+        m = 'WINDOW 2 /// SELECTED CIRCLES FOR ANALYSIS'
+        cv2.namedWindow(m)
+        cv2.setWindowProperty(m, cv2.WND_PROP_TOPMOST, 1)
+        cv2.moveWindow(m,10,50)
+        DDU.show_window(m, selection_frame, size_ratio, cap1, filename)
+        
         
 
     if stop_reiterating == True:
-        i = input(f'\n{RED}[PROGRAM] > {END}The deselected circles have been removed. \n\n{RED}[PROGRAM] > {END}Press {YELLOW}[ENTER]{END} to begin analysis of the change in intensity within each circle.\n')
-        if i in 'Rr':
-            break
-    else:
-        stop_reiterating = True # will set stop_reinterating to true after the first loop
+        #i = input(f'\n{RED}[PROGRAM] > {END}The deselected circles have been removed. \n\n{RED}[PROGRAM] > {END}Press {YELLOW}[ENTER]{END} to begin analysis of the change in intensity within each circle.\n')
+        #if i in 'Rr':
+        #    break
+        break # breaks loop and begins analysis
+
+    elif user_ready == True:
+
+        stop_reiterating = True 
 
     if cv2.waitKey(1) == ord('r'): #27: # Escape key ASCII is 27. If R is pressed on video instead of console.
         break
 
-
+cv2.destroyWindow(n)
+cv2.destroyWindow(m)
+print('\n') # give space before loading loop... cant add space to loading loop or else it will bug out.
 
 while True:
     stop_reiterating = False
@@ -613,7 +618,7 @@ while True: # it seems that after video analysis, the data is stored in memory :
 
     while not ask_user_temperature_ready:
 
-        ask_user_temperature = input(f'\n{RED}[PROGRAM] > {END}Would you like to upload an excel file containing the temperature data? (Temperature data should correspond to elapsed experiment/video time in seconds).\n\n{GREEN}[USER INPUT] > {END}')
+        ask_user_temperature = input(f'\n{RED}[PROGRAM] > {END}Would you like to upload an excel file containing the temperature data? \n(Temperature data should correspond to elapsed experiment/video time in seconds). \nPlease press {YELLOW}\'Y\'{END} or {YELLOW}\'N\'{END}. \n\n{GREEN}[USER INPUT] > {END}')
         
         if ask_user_temperature.lower() == 'y':
 
@@ -667,7 +672,7 @@ while True: # it seems that after video analysis, the data is stored in memory :
 
 
     
-    x = input(f'\n{RED}[PROGRAM] > {END}To save the data as a .csv file and to show the plotted intensity vs frame or time graphs, press {YELLOW}[ENTER]{END}.\n\n{GREEN}[USER INPUT] > {END}')
+    x = input(f'\n{RED}[PROGRAM] > {END}To save the data as a .csv file and to show the plotted graphs, press {YELLOW}[ENTER]{END}.\n\n{GREEN}[USER INPUT] > {END}')
     if x in 'Rr':
         break
 

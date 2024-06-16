@@ -360,6 +360,7 @@ def get_boxplot_data_by_radii(calib_r_list, min_intensity_all_temperatures):
     #print('calib r list', len(calib_r_list), calib_r_list, 'min intensity temp', len(min_intensity_all_temperatures), min_intensity_all_temperatures)
 
     # Create a DataFrame from the input list
+    #print('len', len(calib_r_list), len(min_intensity_all_temperatures))
     df = pd.DataFrame({'radii': calib_r_list, 'min_intensity_temperatures': min_intensity_all_temperatures})
     
     # Use pd.cut to bin the data into 3 categories labeled 'A', 'B', 'C'
@@ -371,6 +372,7 @@ def get_boxplot_data_by_radii(calib_r_list, min_intensity_all_temperatures):
     #print("\nBin edges:")
     #print(bin_edges)
     
+
     # Group by the 'bins' column
     grouped = df.groupby('bins', observed=True)
     
@@ -408,6 +410,19 @@ def plot_boxplot(bin_data_list, bin_edges, label_names, axis):
         freezing_temperatures.append(freezing_temperature_per_bin)
     
     #print('freezing temps', freezing_temperatures)
+
+
+
+    # rename labels to include the bin edges
+    new_label_names = []
+
+    for i in range(len(label_names)):
+        label_names_hold = [str(round(bin_edges[i],1)) + 'um to ' + str(round(bin_edges[i+1],1) +'um')]
+        new_label_names.append(label_names_hold)
+
+    label_names = new_label_names
+    #print(label_names)
+
 
 
     boxp.boxplot(freezing_temperatures, showmeans=True)

@@ -15,29 +15,32 @@ BOLD = "\033[1m"
 LGREEN = "\033[92m"
 LRED = "\033[91m"
 
-def frame_overlay_select():
+def frame_overlay_select(deselection_input_list):
 
+    circle_was_selected = False
+    deselection_input_list = deselection_input_list
     user_ready = False
-    deselection_input_list = []
 
-    while user_ready == False:
+    while circle_was_selected == False:
         
         #print('The deselected circles will be: ', selection_list)
         
-        print(f'\n{RED}[PROGRAM] > {END}Please enter an integer representing the circle # that you wish to deselect. \nCurrently, the {YELLOW}deselected circle(s){END} entered are: {YELLOW}{BOLD}', deselection_input_list, f'{END}\nOtherwise, press {YELLOW}[ENTER]{END} to confirm the chosen deselected circles, if any.\n\n{GREEN}[USER INPUT] > {END}')
+        print(f'\n{RED}[PROGRAM] > {END}Please enter an integer representing the circle # that you wish to deselect. \nCurrently, the {YELLOW}deselected circle(s){END} entered are: {YELLOW}{BOLD}', deselection_input_list, f'{END}\nOtherwise, press {YELLOW}[ENTER]{END} to begin analysis of the change in intensity within each circle.\n\n{GREEN}[USER INPUT] > {END}')
         user_input = input()
 
         if user_input.isnumeric():
 
             deselection_input_list.append(int(user_input))
+            circle_was_selected = True
 
         elif user_input == 'r' or 'R':
+            circle_was_selected = True
             user_ready = True
 
         else:
             print(f'{RED}[PROGRAM] > {END}\nInvalid input. Please enter a single integer value at a time.\n')
     
-    return deselection_input_list
+    return deselection_input_list, user_ready
 
 def make_selection_list(areas_sorted: list, deselection_input_list, selection_frame):
 

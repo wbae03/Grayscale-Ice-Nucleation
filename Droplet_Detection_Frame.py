@@ -98,7 +98,7 @@ Choosing the wrong sensitivity may lead to overwhelming or underwhelming false-p
                                 cv2.HOUGH_GRADIENT, 
                                 1.1, # influences whether nearby circles will be merged
                                 100, # min distance between two circles
-                                param1=15, # sensitivity of circle detection; High = wont find much circles
+                                param1=12, # sensitivity of circle detection; High = wont find much circles
                                 param2=25, # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles
                                 minRadius=20, # min radius of circles
                                 maxRadius=200)  # max radius of circles 
