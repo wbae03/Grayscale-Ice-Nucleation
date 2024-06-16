@@ -77,24 +77,16 @@ BOLD = "\033[1m"
 def banner():
     font = fr'''
     {CYAN}
-
-
-    
-
-
-
-
-
-
-
    ___                               _         _____               __            _            _   _             
   / _ \_ __ __ _ _   _ ___  ___ __ _| | ___    \_   \___ ___    /\ \ \_   _  ___| | ___  __ _| |_(_) ___  _ __  
  / /_\/ '__/ _` | | | / __|/ __/ _` | |/ _ \    / /\/ __/ _ \  /  \/ / | | |/ __| |/ _ \/ _` | __| |/ _ \| '_ \ 
 / /_\\| | | (_| | |_| \__ \ (_| (_| | |  __/ /\/ /_| (_|  __/ / /\  /| |_| | (__| |  __/ (_| | |_| | (_) | | | |
 \____/|_|  \__,_|\__, |___/\___\__,_|_|\___| \____/ \___\___| \_\ \/  \__,_|\___|_|\___|\__,_|\__|_|\___/|_| |_|
-                 |___/                                                                                          
+                 |___/                                                                  {BOLD}Version 1.3.1{END}                                             
+{END}
+    {GREEN}> {END}William Bae | NBD Group @ UBC Chemistry     {GREEN}> {END}www.github.com/wbae03     {GREEN}> {END}LinkedIn: wbae03
 
-    > {END}William Bae | NBD Group @ UBC Chemistry     {GREEN}> {END}www.github.com/wbae03     {GREEN}> {END}Created 24/06/14
+              {GREEN}> {END}Known OS Compatibilities: Win10 | Win11          {GREEN}> {END}Created 24/06/14
 
     '''
     print(font)
@@ -137,7 +129,7 @@ close_calib_window = False
 
 while not ask_user_calib_ready: # While loop ensures the user prompts are repeated if the user input is invalid (ie not 'y' or 'n')
 
-    ask_user_calib = input(f'\n{RED}[PROGRAM] >{END} Do you require calibration using an image with a known measurement (ie. using a ruler)? \nYou may instead enter a calibration ratio (image pixel length / actual micrometer length) obtained from previous calibrations.\nPress {YELLOW}\'Y\'{END} to load an image.\nPress {YELLOW}\'N\'{END} to enter a known calibration ratio value.\n\n{GREEN}[USER INPUT] > {END}')
+    ask_user_calib = input(f'\n{RED}[PROGRAM] >{END} Do you require calibration using an image with a known measurement (ie. using a ruler)? \nAlternatively, enter a calibration ratio (pixel length / micrometer length) obtained from previous calibrations.\n\nPress {YELLOW}\'Y\'{END} to load an image.\nPress {YELLOW}\'N\'{END} to enter a known calibration ratio value.\n\n{GREEN}[USER INPUT] > {END}')
 
     if ask_user_calib.lower() == 'y':
 
