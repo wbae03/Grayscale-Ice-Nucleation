@@ -12,6 +12,8 @@ CYAN = "\033[36m"
 LBLUE = "\033[94m"
 END = "\033[0m"
 BOLD = "\033[1m"
+LGREEN = "\033[92m"
+LRED = "\033[91m"
 
 def frame_overlay_select():
 
@@ -112,5 +114,5 @@ def selected_circles_on_frame_and_label(selection_list: list, selection_frame, c
             #selection_frame = cv2.putText(selection_frame, 'C=' + str(circumference), (x+5, y+35), font, 1, (0, 255, 100), 2, cv2.LINE_AA) 
 
 
-            print(f'{GREEN}Circle #', i[4], f' --- Selection successful!{END}')
+            print(f'{LGREEN}Circle #', i[4], f' --- Selection successful!{END}')
         return selection_frame, calib_r_list

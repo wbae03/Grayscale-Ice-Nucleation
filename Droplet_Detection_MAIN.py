@@ -72,21 +72,29 @@ LBLUE = "\033[94m"
 END = "\033[0m"
 BOLD = "\033[1m"
 
+#os.system('cls') # clear console
+
 def banner():
-    font = f'''
+    font = fr'''
     {CYAN}
 
 
     
+
+
+
+
+
+
+
    ___                               _         _____               __            _            _   _             
   / _ \_ __ __ _ _   _ ___  ___ __ _| | ___    \_   \___ ___    /\ \ \_   _  ___| | ___  __ _| |_(_) ___  _ __  
  / /_\/ '__/ _` | | | / __|/ __/ _` | |/ _ \    / /\/ __/ _ \  /  \/ / | | |/ __| |/ _ \/ _` | __| |/ _ \| '_ \ 
-/ /_\\\| | | (_| | |_| \__ \ (_| (_| | |  __/ /\/ /_| (_|  __/ / /\  /| |_| | (__| |  __/ (_| | |_| | (_) | | | |
+/ /_\\| | | (_| | |_| \__ \ (_| (_| | |  __/ /\/ /_| (_|  __/ / /\  /| |_| | (__| |  __/ (_| | |_| | (_) | | | |
 \____/|_|  \__,_|\__, |___/\___\__,_|_|\___| \____/ \___\___| \_\ \/  \__,_|\___|_|\___|\__,_|\__|_|\___/|_| |_|
                  |___/                                                                                          
 
     > {END}William Bae | NBD Group @ UBC Chemistry     {GREEN}> {END}www.github.com/wbae03     {GREEN}> {END}Created 24/06/14
-
 
     '''
     print(font)
@@ -292,6 +300,7 @@ print(f"\n{RED}[SYSTEM] > {END}Does the file exist: ", os.path.exists(filename))
 
 codec_code = cap2.get(cv2.CAP_PROP_FOURCC)
 #print('\nCodec code of video: ', hex(int(codec_code)))
+sens_selection = []
 
 #print('no')
 
@@ -312,8 +321,9 @@ while True: # makes sure the video loaded + frames are able to be captured
 
     if stop_reiterating == False:
         if ret:
-            print(f'\n{RED}[VIDEO PROPERTIES] >{END}')
+            print(f'\n{RED}[SYSTEM] > {END}\n') 
             print(f'Selected file: {YELLOW}', filename, f'{END}')
+            print(f'\n{CYAN}    Video Property                       Value{END}')
             print(f'Total frame count of video ----------- {YELLOW}[', total_frame_count, f']{END}')
             print(f'The detected video FPS --------------- {YELLOW}[', fps, f']{END}')
             print(f'Duration of the video: --------------- {YELLOW}[', round(duration, 2), f' sec ]{END}, or {YELLOW}[', str(minutes), f' min', str(round(seconds, 2)), f' sec ]{END}')
@@ -342,6 +352,9 @@ while True: # makes sure the video loaded + frames are able to be captured
 
             # frame_circles: detects circles within the frame
             
+
+
+
             circles = DDF.frame_circles(frame)
 
             # frame_overlay_sort: numerically orders circles from left to right, top to bottom, based on x and y axis position.
@@ -412,7 +425,7 @@ while True:
         
 
     if stop_reiterating == True:
-        i = input(f'\n{RED}[PROGRAM] > {END}The deselected circles have been removed. \nPress {YELLOW}[ENTER]{END} to begin analysis of the change in intensity within each circle.\n')
+        i = input(f'\n{RED}[PROGRAM] > {END}The deselected circles have been removed. \n\n{RED}[PROGRAM] > {END}Press {YELLOW}[ENTER]{END} to begin analysis of the change in intensity within each circle.\n')
         if i in 'Rr':
             break
     else:
@@ -712,6 +725,11 @@ cv2.destroyAllWindows
 
 figure, axis = plt.subplots(2, 2, figsize=(30,15)) # width, height
 
+circle_radii = []
+circle_freezing_temperatures = []
+os.environ["USERPROFILE"]
+save_path = os.path.join(os.environ["USERPROFILE"], "Desktop")
+
 if use_temperature_file == True:
     
 
@@ -731,48 +749,34 @@ if use_temperature_file == True:
     # only plot points if the time data between temperature csv file and the video time data match.
     #paired_intensity_difference_to_temperature = DDG.get_dintensity_matched_to_temperature(intensity_difference_axes, video_seconds, temperature_df)
     #DDG.plot_dintensity_vs_temperature(paired_intensity_difference_to_temperature, axis)
+    for i in range(len(bin_data_list)):
 
-#if use_temperature_file == False:
+        for t in range(len(bin_data_list[i])):
 
-    
-    #DDG.plot_intensity_vs_frames(intensity_axes, frame_axes, axis, frame_count)
-    #DDG.plot_dintensity_vs_dframes(intensity_difference_axes, frame_axes, axis, frame_count)
+            circle_radii.append(bin_data_list[i][t][0])
+            circle_freezing_temperatures.append(bin_data_list[i][t][1])
+
+    c = {'Radii (um)': circle_radii, 'Freezing Temperature (C)': circle_freezing_temperatures}
+
+    export_radii_freezing = pd.DataFrame(c)
+
+    export_radii_freezing.to_csv(save_path + '/GIN/' + csv_name + '_radii_and_temperature.csv')
 
 DDG.plot_intensity_vs_seconds(intensity_axes, video_seconds, axis)
+
 DDG.plot_dintensity_vs_seconds(intensity_difference_axes, video_seconds, axis)
 
 d = {'Frame Time (seconds)': video_seconds, 'Frames Axes': frame_axes}
-#print(len(frame_axes), len(intensity_axes))
+
 export_intensity_differences = pd.DataFrame(d)
 
 for i in range(len(intensity_axes)):
+
     export_intensity_differences['Avg Grayscale Intensity of Circle' + str(i+1)] = intensity_axes[i]
 
-#export_radii_freezing = pd.DataFrame(bin_data_list)
-
-circle_radii = []
-circle_freezing_temperatures = []
-
-print(bin_data_list)
-
-for i in range(len(bin_data_list)):
-
-    for t in range(len(bin_data_list[i])):
-
-        circle_radii.append(bin_data_list[i][t][0])
-        circle_freezing_temperatures.append(bin_data_list[i][t][1])
-
-c = {'Radii (um)': circle_radii, 'Freezing Temperature (C)': circle_freezing_temperatures}
-export_radii_freezing = pd.DataFrame(c)
-print('cc', c)
-
-os.environ["USERPROFILE"]
-save_path = os.path.join(os.environ["USERPROFILE"], "Desktop")
 export_intensity_differences.to_csv(save_path + '/GIN/' + csv_name + '_intensity_change.csv')
-export_radii_freezing.to_csv(save_path + '/GIN/' + csv_name + '_radii_and_temperature.csv')
 
 plt.savefig(save_path + '/GIN/' + csv_name + '_all_plots.png')
-
 
 end_banner = f'''\n
 {CYAN}
