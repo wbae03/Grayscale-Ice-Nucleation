@@ -15,4 +15,3 @@
  - Animated snowflake in loading screen does not properly render in Win10
  - Infinite loading screen when analyzing very short videos (single digit seconds)
  - Weirdly, able to process gifs and images when submitting as a 'video' file... negative 'video' properties will occur but analysis will work...
- - There is an issue in cross-matching temperature data files with unassociated videos... why?

@@ -127,6 +127,8 @@ calibration_ratio = 0
 
 close_calib_window = False
 
+finished_drawing = False
+
 while not ask_user_calib_ready: # While loop ensures the user prompts are repeated if the user input is invalid (ie not 'y' or 'n')
 
     ask_user_calib = input(f'\n{RED}[PROGRAM] >{END} Do you require calibration using an image with a known measurement (ie. using a ruler)? \nAlternatively, enter a calibration ratio (pixel length / micrometer length) obtained from previous calibrations.\n\nPress {YELLOW}\'Y\'{END} to load an image.\nPress {YELLOW}\'N\'{END} to enter a known calibration ratio value.\n\n{GREEN}[USER INPUT] > {END}')
@@ -163,13 +165,14 @@ if use_calib_image == True:
 
     def on_mouse(event, x, y, flags, param): # although flags and param are not used in this function, they must be included in the parameters as the data from mouse clicks feeds into this function and includes these parameters.
 
-        global drawing, sbox, line_coords, temp_image, calib_pixel_length, calib_real_length, calib_user_ready, calibration_ratio, close_calib_window
+        global finished_drawing, drawing, sbox, line_coords, temp_image, calib_pixel_length, calib_real_length, calib_user_ready, calibration_ratio, close_calib_window
 
         x = math.floor(x * 1/size_ratio) # note: resizing the window size DOES NOT scale down the frames system / mouse coordinate system.. must convert the mouse values by applying an opposite scale (ie if the frame is scaled down by 0.5 of original size, then scale mouse coordinates by 1/0.5 aka x2 !!)
         
         y = math.floor(y * 1/size_ratio)
+        
 
-        if event == cv2.EVENT_LBUTTONDOWN:
+        if event == cv2.EVENT_LBUTTONDOWN and finished_drawing == False:
 
             print(f'\n{RED}[PROGRAM] > {END}Start Mouse Position: {YELLOW}[' + str(x) + ',' + str(y) + f']{END}')
 
@@ -179,13 +182,16 @@ if use_calib_image == True:
 
             drawing = True
 
-        elif event == cv2.EVENT_MOUSEMOVE:
+        elif event == cv2.EVENT_MOUSEMOVE and finished_drawing == False:
             if drawing:
                 temp_image = image.copy()  # Reset to the original image
                 cv2.line(temp_image, tuple(sbox), (x, y), (0, 0, 255), 4)
                 #print('drawing! initial xy:', sbox, 'final xy:', x, y)
 
-        elif event == cv2.EVENT_LBUTTONUP:
+        elif event == cv2.EVENT_LBUTTONUP and finished_drawing == False:
+            
+            finished_drawing = True
+            
             print(f'\n{RED}[PROGRAM] > {END}End Mouse Position: {YELLOW}[' + str(x) + ',' + str(y) + f']{END}')
             ebox = [x, y]
             line_coords.append(ebox)
@@ -199,6 +205,7 @@ if use_calib_image == True:
             calib_pixel_length = round(math.sqrt(x_length**2 + y_length*2), 2)
             print(f'\n{RED}[PROGRAM] > {END}Calibration pixel length: {YELLOW}[', calib_pixel_length, f']{END}')
 
+
             while calib_user_ready == False:
                 
                 calib_real_length = input(f'\n{RED}[PROGRAM] > {END}Please enter the actual length {YELLOW}[MICROMETERS]{END} of the calibration tool.\n\n{GREEN}[USER INPUT] > {END}')
@@ -208,6 +215,7 @@ if use_calib_image == True:
                     calib_user_ready = True
                     calibration_ratio = round(float(calib_pixel_length) / float(calib_real_length), 2) # magnification = image length / actual length
                     print(f'\n{RED}[PROGRAM] > {END}Calibration successful. The calibration ratio is: {YELLOW}[', calibration_ratio, f']{END}. \nPlease write down this value if you will be analyzing more video data in the future, so you can enter the calibration ratio.')
+                    cv2.destroyWindow('Calibration Window')
 
                 else:
                     print(f'\n{RED}[PROGRAM] > {END}Invalid input. Please enter the actual length {YELLOW}[MICROMETERS]{END} of the calibration tool')
@@ -216,7 +224,8 @@ if use_calib_image == True:
 
     # Create a window and set the mouse callback
     cv2.namedWindow('Calibration Window')
-    cv2.setMouseCallback('Calibration Window', on_mouse)
+    if finished_drawing == False:
+        cv2.setMouseCallback('Calibration Window', on_mouse)
 
     # Keep the window open until a key is pressed
     

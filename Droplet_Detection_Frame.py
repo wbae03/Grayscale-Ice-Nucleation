@@ -149,7 +149,7 @@ Choosing the wrong sensitivity may lead to overwhelming or underwhelming false-p
                 print(f'\n {RED}[PROGRAM] > {END}(Above RuntimeWarning explanation) Detected an out-of-bounds circle (y-pos: ', i[0], 'x-pos: ', i[1], 'pixel radius: ', i[2],f'). {YELLOW}Deselecting the circle...{END}')
     
     else:
-        print(f'{RED}[PROGRAM] > {END}WARNING: Unable to detect circles in the given footage. Please tweak the circle detection parameters, so that circles can be detected in the video.')
+        x = input(f'\n{RED}[PROGRAM] > {END}{YELLOW}WARNING: Unable to detect circles in the given footage with the chosen option. \nPlease restart the program and choose a different circle detection option.{END} \nPress{YELLOW} [ENTER]{END} to terminate the program.')
 
     ### print('\nDetected circles [x-pos, y-pos, radius]: \n', circles) # to see the numpyarray of the circles generated in this frame. [y, x, r]
     return circles
