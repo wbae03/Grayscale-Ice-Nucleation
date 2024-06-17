@@ -82,7 +82,7 @@ def banner():
  / /_\/ '__/ _` | | | / __|/ __/ _` | |/ _ \    / /\/ __/ _ \  /  \/ / | | |/ __| |/ _ \/ _` | __| |/ _ \| '_ \ 
 / /_\\| | | (_| | |_| \__ \ (_| (_| | |  __/ /\/ /_| (_|  __/ / /\  /| |_| | (__| |  __/ (_| | |_| | (_) | | | |
 \____/|_|  \__,_|\__, |___/\___\__,_|_|\___| \____/ \___\___| \_\ \/  \__,_|\___|_|\___|\__,_|\__|_|\___/|_| |_|
-                 |___/                                                                  {BOLD}Version 1.3.1{END}                                             
+                 |___/                                                                  {BOLD}Version 1.5.0{END}                                              
 {END}
     {GREEN}> {END}William Bae | NBD Group @ UBC Chemistry     {GREEN}> {END}www.github.com/wbae03     {GREEN}> {END}LinkedIn: wbae03
 
@@ -302,7 +302,7 @@ print(f"\n{RED}[SYSTEM] > {END}Does the file exist: ", os.path.exists(filename))
 codec_code = cap2.get(cv2.CAP_PROP_FOURCC)
 #print('\nCodec code of video: ', hex(int(codec_code)))
 sens_selection = []
-
+user_circle_detection_ready = False
 #print('no')
 
 while True: # makes sure the video loaded + frames are able to be captured
@@ -310,6 +310,7 @@ while True: # makes sure the video loaded + frames are able to be captured
     # MANIPULATE LOADED VIDEO
 
     ret, frame = cap.read()
+
 
     #print(frame)
 
@@ -355,26 +356,47 @@ while True: # makes sure the video loaded + frames are able to be captured
             
 
 
+            while user_circle_detection_ready == False:
+                n = 'WINDOW 1 /// DETECTED CIRCLES'
+                
+                frame_copy = frame.copy()
 
-            circles = DDF.frame_circles(frame)
+                #circles = [] # resets with each loop
+                circles, user_circle_detection_ready_input = DDF.frame_circles(frame_copy, n)
 
-            # frame_overlay_sort: numerically orders circles from left to right, top to bottom, based on x and y axis position.
-                # done by assessing the calculated area between width and height. Smaller = closer to 0,0... kind of
-                # this fn should order the values of circles consistently within lists!!)
+                print('user input', user_circle_detection_ready_input)
 
-            areas_sorted = DDF.frame_overlay_sort(circles)
+                # frame_overlay_sort: numerically orders circles from left to right, top to bottom, based on x and y axis position.
+                    # done by assessing the calculated area between width and height. Smaller = closer to 0,0... kind of
+                    # this fn should order the values of circles consistently within lists!!)
+
+                areas_sorted = DDF.frame_overlay_sort(circles)
 
 
-            # frame_overlay_label: numerically label the order of circles on frame screen
+                # frame_overlay_label: numerically label the order of circles on frame screen
 
-            DDF.frame_overlay_label(areas_sorted, frame, calibration_ratio)
+                DDF.frame_overlay_label(areas_sorted, frame_copy, calibration_ratio)
 
-            n = 'WINDOW 1 /// DETECTED CIRCLES'
-            cv2.namedWindow(n)
-            cv2.setWindowProperty(n, cv2.WND_PROP_TOPMOST, 1)
-            cv2.moveWindow(n,10,50)
-            DDU.show_window(n, frame, size_ratio, cap, filename)
+                
+                cv2.namedWindow(n)
+                cv2.setWindowProperty(n, cv2.WND_PROP_TOPMOST, 1)
+                cv2.moveWindow(n,10,50)
+                DDU.show_window(n, frame_copy, size_ratio, cap, filename)
+
+                #user_circle_detection_ready_input = input(f'\n{RED}[PROGRAM] > {END}To switch the circle detection sensitivity, please re-select an option. \nOtherwise, please press {YELLOW}[ENTER]{END} to proceed with the analysis. \n\n{GREEN}[USER INPUT] > {END}')
         
+                if user_circle_detection_ready_input == True:
+                    print('ddd')
+                    user_circle_detection_ready = True
+                
+                '''
+                elif user_circle_detection_ready_input == False:
+                    print('tat')
+                    if int(user_circle_detection_ready_input) in range(6):
+                        print('bab')
+                        cv2.destroyWindow(n)
+                '''
+
         else:
             print(f'{RED}[PROGRAM] > {END}Video Load Error! File may be corrupted, does not meet the compatible file extensions.')
         

@@ -33,7 +33,7 @@ def frame_overlay_select(deselection_input_list):
             deselection_input_list.append(int(user_input))
             circle_was_selected = True
 
-        elif user_input == 'r' or 'R':
+        elif user_input == 'r' or 'R': # or enter
             circle_was_selected = True
             user_ready = True
 

@@ -15,20 +15,31 @@ LBLUE = "\033[94m"
 END = "\033[0m"
 BOLD = "\033[1m"
 
+first_pass = False
+
+last_stored_sens_selection = 0
+
 def frame_capture(i: int, cap):
     cap.set(cv2.CAP_PROP_POS_FRAMES, i)
 
-def frame_circles(frame):
+def frame_circles(frame, n):
+    global first_pass, last_stored_sens_selection
+    print('first pass', first_pass)
+  
+
     grayFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # grayscale to remove color noise
     blurFrame = cv2.GaussianBlur(grayFrame, (17, 17), 0) # blur to lower background noise. 2nd p: both values must be odd. Higher = more blur. Default: 17,17
     #value, thresh = cv2.threshold(blurFrame, 200, 255, cv2.THRESH_BINARY_INV) # pixels below 130 become 0, above become 255 (white)
 
     sens_selection_ready = False
+
     
+    
+    user_circle_detection_ready_input = False # to be returned to decide if main loop continues or terminates
 
     while sens_selection_ready == False:
 
-        print(f'''\n{RED}PROGRAM] > {END}Please select an option for the {YELLOW}circle detection sensitivity{END}. 
+        print(f'''\n{RED}PROGRAM] > {END}Please select (or re-select) an option for the {YELLOW}circle detection sensitivity{END}. 
 Choosing the wrong sensitivity may lead to overwhelming or underwhelming false-positive circles. 
 
                 {CYAN}Sensitivity Option        Use if the Video Footage Contains:{END}
@@ -41,15 +52,36 @@ Choosing the wrong sensitivity may lead to overwhelming or underwhelming false-p
         
         sens_selection = input(f'\n{GREEN}[USER INPUT] > {END}')
 
+        print(sens_selection)
         try: 
             if isinstance(int(sens_selection), int):
                 if int(sens_selection) in (1,2,3,4,5):
                 
                     sens_selection = int(sens_selection)
+                    last_stored_sens_selection = sens_selection
                     sens_selection_ready = True
+
+                    if first_pass == True:
+                        print('fsadsdf')
+                        cv2.destroyWindow(n)
+
+                    else: 
+                        first_pass = True
+
+
         
         except:
-            print(f'\n{RED}[PROGRAM] > {END}Invalid input. Please enter an integer value from the provided options.')
+
+            if first_pass == True: # or enter
+                print('adfaff')
+                if sens_selection == '':
+                    print('fwaaa')
+                    user_circle_detection_ready_input = True
+                    sens_selection_ready = True
+                    sens_selection = last_stored_sens_selection
+
+            else:
+                print(f'\n{RED}[PROGRAM] > {END}Invalid input. Please enter an integer value from the provided options.')
 
 
 
@@ -116,7 +148,7 @@ Choosing the wrong sensitivity may lead to overwhelming or underwhelming false-p
                                 maxRadius=200)  # max radius of circles    
         
         print(f'\n{RED}[PROGRAM] > {END}Detection parameters {YELLOW}(5){END} used by the program.')    
-                   
+                
     
     if circles is not None:
         #print(circles)
@@ -152,7 +184,7 @@ Choosing the wrong sensitivity may lead to overwhelming or underwhelming false-p
         x = input(f'\n{RED}[PROGRAM] > {END}{YELLOW}WARNING: Unable to detect circles in the given footage with the chosen option. \nPlease restart the program and choose a different circle detection option.{END} \nPress{YELLOW} [ENTER]{END} to terminate the program.')
 
     ### print('\nDetected circles [x-pos, y-pos, radius]: \n', circles) # to see the numpyarray of the circles generated in this frame. [y, x, r]
-    return circles
+    return circles, user_circle_detection_ready_input
 
 def frame_overlay_sort(circles):
     
