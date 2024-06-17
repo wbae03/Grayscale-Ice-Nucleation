@@ -24,7 +24,7 @@ def frame_capture(i: int, cap):
 
 def frame_circles(frame, n):
     global first_pass, last_stored_sens_selection
-    print('first pass', first_pass)
+
   
 
     grayFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # grayscale to remove color noise
@@ -41,6 +41,7 @@ def frame_circles(frame, n):
 
         print(f'''\n{RED}PROGRAM] > {END}Please select (or re-select) an option for the {YELLOW}circle detection sensitivity{END}. 
 Choosing the wrong sensitivity may lead to overwhelming or underwhelming false-positive circles. 
+If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
 
                 {CYAN}Sensitivity Option        Use if the Video Footage Contains:{END}
                         {YELLOW}(1){END} ............. High Clarity, Distinct & Perfect Circles
@@ -52,7 +53,6 @@ Choosing the wrong sensitivity may lead to overwhelming or underwhelming false-p
         
         sens_selection = input(f'\n{GREEN}[USER INPUT] > {END}')
 
-        print(sens_selection)
         try: 
             if isinstance(int(sens_selection), int):
                 if int(sens_selection) in (1,2,3,4,5):
@@ -62,7 +62,7 @@ Choosing the wrong sensitivity may lead to overwhelming or underwhelming false-p
                     sens_selection_ready = True
 
                     if first_pass == True:
-                        print('fsadsdf')
+        
                         cv2.destroyWindow(n)
 
                     else: 
@@ -73,9 +73,9 @@ Choosing the wrong sensitivity may lead to overwhelming or underwhelming false-p
         except:
 
             if first_pass == True: # or enter
-                print('adfaff')
+
                 if sens_selection == '':
-                    print('fwaaa')
+
                     user_circle_detection_ready_input = True
                     sens_selection_ready = True
                     sens_selection = last_stored_sens_selection

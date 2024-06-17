@@ -364,7 +364,6 @@ while True: # makes sure the video loaded + frames are able to be captured
                 #circles = [] # resets with each loop
                 circles, user_circle_detection_ready_input = DDF.frame_circles(frame_copy, n)
 
-                print('user input', user_circle_detection_ready_input)
 
                 # frame_overlay_sort: numerically orders circles from left to right, top to bottom, based on x and y axis position.
                     # done by assessing the calculated area between width and height. Smaller = closer to 0,0... kind of
@@ -386,7 +385,7 @@ while True: # makes sure the video loaded + frames are able to be captured
                 #user_circle_detection_ready_input = input(f'\n{RED}[PROGRAM] > {END}To switch the circle detection sensitivity, please re-select an option. \nOtherwise, please press {YELLOW}[ENTER]{END} to proceed with the analysis. \n\n{GREEN}[USER INPUT] > {END}')
         
                 if user_circle_detection_ready_input == True:
-                    print('ddd')
+
                     user_circle_detection_ready = True
                 
                 '''
