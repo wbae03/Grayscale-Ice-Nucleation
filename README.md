@@ -1,5 +1,5 @@
 # Grayscale Ice Nucleation
- v1.4
+ v1.6.0
 
  A terminal-user-interface (TUI) that detects and keeps track of grayscale intensity change of multiple circles using videos. Using the greatest change in intensity, the program is able to plot graphs showing the instance of freezing linked to time and temperature, and relate the radius size and freezing. Intended for analysis of ice-nucleating behaviour of ice-nucleating droplets under cryo-microscopy.
 
