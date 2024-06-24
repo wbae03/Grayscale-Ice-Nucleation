@@ -660,9 +660,9 @@ while True: # it seems that after video analysis, the data is stored in memory :
         print(f'''
 
         {CYAN}Options                                                            Description{END}
-           {YELLOW}(1) Yes. Upload a {YELLOW}.csv File{END} ------------------------------ File must contain a {YELLOW}\'Temperature\' and a \'Seconds\' column{END}, in {YELLOW}degrees C° and seconds{END} (recommended to use integer values, but not necessary).
-           {YELLOW}(2) Yes. Input a {YELLOW}Temperature Ramp{END} ----------- Input a value to represent the {YELLOW} decreasing change in degrees C° / second{END}, assuming the ramp begins at the {YELLOW}start of the video{END}. {RED}(+/- signs matter!){END}))
-           {YELLOW}(3) No. -------------------------------------------------- No temperature plots will be given. Only the intensity plots vs time will be shown.
+           {YELLOW}(1) Yes. Upload .csv File{END} ----------- File must contain a {YELLOW}\'Temperature\' (C) and a \'Seconds\' column{END}.
+           {YELLOW}(2) Yes. Input a Temperature Ramp{END} ----- Input the {YELLOW}change in degrees C° / second{END} beginning at the video start {RED}(+/- signs matter!).{END}))
+           {YELLOW}(3) No. {END}------------------------------- No temperature-related plots will be given. Only the intensity plots vs time will be shown.
 
         ''')
         ask_user_temperature = input(f'\n\n{GREEN}[USER INPUT] > {END}')
@@ -792,7 +792,7 @@ if use_temperature_file == True:
 
             #temperature_time = [round(float(x), 2) for x in temperature_time]
 
-            print(temperature_time)
+            #print(temperature_time)
 
             break # only take the first instance 
 
@@ -814,7 +814,7 @@ if use_temperature_file == True:
 
             temperature = [round(float(x), 2) for x in temperature]
 
-            print(temperature)
+            #print(temperature)
 
             break # only take the first instance
 
