@@ -56,10 +56,10 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
         try: 
             if isinstance(int(sens_selection), int):
                 if int(sens_selection) in (1,2,3,4,5):
-                
+                    sens_selection_ready = True
                     sens_selection = int(sens_selection)
                     last_stored_sens_selection = sens_selection
-                    sens_selection_ready = True
+                    
 
                     if first_pass == True:
         
@@ -98,6 +98,7 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
         
         print(f'\n{RED}[PROGRAM] > {END}Detection parameters {YELLOW}(1){END} used by the program.')
 
+
     elif sens_selection == 2:
 
         circles = cv2.HoughCircles(blurFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
@@ -110,6 +111,7 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
                                 maxRadius=200)  # max radius of circles # note to self: the radii parameters are quite important in selecting correct circles!!
         
         print(f'\n{RED}[PROGRAM] > {END}Detection parameters {YELLOW}(2){END} used by the program.')
+
 
     elif sens_selection == 3:
 
@@ -124,6 +126,8 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
                                 maxRadius=200)  # max radius of circles 
         
         print(f'\n{RED}[PROGRAM] > {END}Detection parameters {YELLOW}(3){END} used by the program.')
+
+
     elif sens_selection == 4:
 
         circles = cv2.HoughCircles(blurFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
@@ -136,6 +140,8 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
                                 maxRadius=200)  # max radius of circles 
         
         print(f'\n{RED}[PROGRAM] > {END}Detection parameters {YELLOW}(4){END} used by the program.')
+
+
     elif sens_selection == 5:
 
         circles = cv2.HoughCircles(blurFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
@@ -151,6 +157,7 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
                 
     
     if circles is not None:
+
         #print(circles)
         circles = np.uint16(np.around(circles)) #converts the list to numpy array)
         #print(circles)
@@ -181,7 +188,9 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
                 print(f'\n {RED}[PROGRAM] > {END}(Above RuntimeWarning explanation) Detected an out-of-bounds circle (y-pos: ', i[0], 'x-pos: ', i[1], 'pixel radius: ', i[2],f'). {YELLOW}Deselecting the circle...{END}')
     
     else:
-        x = input(f'\n{RED}[PROGRAM] > {END}{YELLOW}WARNING: Unable to detect circles in the given footage with the chosen option. \nPlease restart the program and choose a different circle detection option.{END} \nPress{YELLOW} [ENTER]{END} to terminate the program.')
+        
+        user_circle_detection_ready_input = False # to be returned to decide if main loop continues or terminates
+
 
     ### print('\nDetected circles [x-pos, y-pos, radius]: \n', circles) # to see the numpyarray of the circles generated in this frame. [y, x, r]
     return circles, user_circle_detection_ready_input

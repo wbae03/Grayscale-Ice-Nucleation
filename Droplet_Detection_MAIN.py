@@ -82,7 +82,7 @@ def banner():
  / /_\/ '__/ _` | | | / __|/ __/ _` | |/ _ \    / /\/ __/ _ \  /  \/ / | | |/ __| |/ _ \/ _` | __| |/ _ \| '_ \ 
 / /_\\| | | (_| | |_| \__ \ (_| (_| | |  __/ /\/ /_| (_|  __/ / /\  /| |_| | (__| |  __/ (_| | |_| | (_) | | | |
 \____/|_|  \__,_|\__, |___/\___\__,_|_|\___| \____/ \___\___| \_\ \/  \__,_|\___|_|\___|\__,_|\__|_|\___/|_| |_|
-                 |___/                                                                  {BOLD}Version 1.5.0{END}                                              
+                 |___/                                                                  {BOLD}Version 1.6.0{END}                                              
 {END}
     {GREEN}> {END}William Bae | NBD Group @ UBC Chemistry     {GREEN}> {END}www.github.com/wbae03     {GREEN}> {END}LinkedIn: wbae03
 
@@ -131,7 +131,7 @@ finished_drawing = False
 
 while not ask_user_calib_ready: # While loop ensures the user prompts are repeated if the user input is invalid (ie not 'y' or 'n')
 
-    ask_user_calib = input(f'\n{RED}[PROGRAM] >{END} Do you require calibration using an image with a known measurement (ie. using a ruler)? \nAlternatively, enter a calibration ratio (pixel length / micrometer length) obtained from previous calibrations.\n\nPress {YELLOW}\'Y\'{END} to load an image.\nPress {YELLOW}\'N\'{END} to enter a known calibration ratio value.\n\n{GREEN}[USER INPUT] > {END}')
+    ask_user_calib = input(f'\n{RED}[PROGRAM] >{END} Do you require calibration using an image with a known measurement (ie. using a ruler)? \nAlternatively, enter a calibration ratio {YELLOW}(pixel length / micrometer length){END} obtained from previous calibrations.\n\nPress {YELLOW}\'Y\'{END} to load an image.\nPress {YELLOW}\'N\'{END} to enter a known calibration ratio value.\n\n{GREEN}[USER INPUT] > {END}')
 
     if ask_user_calib.lower() == 'y':
 
@@ -364,37 +364,42 @@ while True: # makes sure the video loaded + frames are able to be captured
                 #circles = [] # resets with each loop
                 circles, user_circle_detection_ready_input = DDF.frame_circles(frame_copy, n)
 
+                if circles is not None:
+                    # frame_overlay_sort: numerically orders circles from left to right, top to bottom, based on x and y axis position.
+                        # done by assessing the calculated area between width and height. Smaller = closer to 0,0... kind of
+                        # this fn should order the values of circles consistently within lists!!)
 
-                # frame_overlay_sort: numerically orders circles from left to right, top to bottom, based on x and y axis position.
-                    # done by assessing the calculated area between width and height. Smaller = closer to 0,0... kind of
-                    # this fn should order the values of circles consistently within lists!!)
-
-                areas_sorted = DDF.frame_overlay_sort(circles)
+                    areas_sorted = DDF.frame_overlay_sort(circles)
 
 
-                # frame_overlay_label: numerically label the order of circles on frame screen
+                    # frame_overlay_label: numerically label the order of circles on frame screen
 
-                DDF.frame_overlay_label(areas_sorted, frame_copy, calibration_ratio)
+                    DDF.frame_overlay_label(areas_sorted, frame_copy, calibration_ratio)
 
+                    
+                    cv2.namedWindow(n)
+                    cv2.setWindowProperty(n, cv2.WND_PROP_TOPMOST, 1)
+                    cv2.moveWindow(n,10,50)
+                    DDU.show_window(n, frame_copy, size_ratio, cap, filename)
+
+                    #user_circle_detection_ready_input = input(f'\n{RED}[PROGRAM] > {END}To switch the circle detection sensitivity, please re-select an option. \nOtherwise, please press {YELLOW}[ENTER]{END} to proceed with the analysis. \n\n{GREEN}[USER INPUT] > {END}')
+            
+                    if user_circle_detection_ready_input == True:
+
+                        user_circle_detection_ready = True
+                    
+                    '''
+                    elif user_circle_detection_ready_input == False:
+                        print('tat')
+                        if int(user_circle_detection_ready_input) in range(6):
+                            print('bab')
+                            cv2.destroyWindow(n)
+                    '''
                 
-                cv2.namedWindow(n)
-                cv2.setWindowProperty(n, cv2.WND_PROP_TOPMOST, 1)
-                cv2.moveWindow(n,10,50)
-                DDU.show_window(n, frame_copy, size_ratio, cap, filename)
+                else:
+                    
+                    print(f'\n{RED}[PROGRAM] > {END}Unable to detect circles with the given circle detection option. Please {YELLOW}reselect.{END}')
 
-                #user_circle_detection_ready_input = input(f'\n{RED}[PROGRAM] > {END}To switch the circle detection sensitivity, please re-select an option. \nOtherwise, please press {YELLOW}[ENTER]{END} to proceed with the analysis. \n\n{GREEN}[USER INPUT] > {END}')
-        
-                if user_circle_detection_ready_input == True:
-
-                    user_circle_detection_ready = True
-                
-                '''
-                elif user_circle_detection_ready_input == False:
-                    print('tat')
-                    if int(user_circle_detection_ready_input) in range(6):
-                        print('bab')
-                        cv2.destroyWindow(n)
-                '''
 
         else:
             print(f'{RED}[PROGRAM] > {END}Video Load Error! File may be corrupted, does not meet the compatible file extensions.')
@@ -631,7 +636,10 @@ done = True # ends the animated loading screen
 
 use_temperature_file = False
 
+use_temperature_ramp = False
+
 ask_user_temperature_ready = False
+
 
 while True: # it seems that after video analysis, the data is stored in memory :))) 
     frame_id = int(cap2.get(cv2.CAP_PROP_POS_FRAMES)) # for some reason, this doesnt start from 1 and go to the final frame, even while looping; it gives the final total frame count right away!! I suspect its because the video was alraedy read in the prev loop (data stored in memory?)
@@ -648,11 +656,20 @@ while True: # it seems that after video analysis, the data is stored in memory :
 
     while not ask_user_temperature_ready:
 
-        ask_user_temperature = input(f'\n{RED}[PROGRAM] > {END}Would you like to upload an excel file containing the temperature data? \n(Temperature data should correspond to elapsed experiment/video time in seconds). \nPlease press {YELLOW}\'Y\'{END} or {YELLOW}\'N\'{END}. \n\n{GREEN}[USER INPUT] > {END}')
-        
-        if ask_user_temperature.lower() == 'y':
+        print(f'\n{RED}[PROGRAM] > {END}Would you like to attach temperature data to the analyzed circles? Please choose an option below.')
+        print(f'''
 
-            temperature_file = print(f'\n{RED}[PROGRAM] > {END}Please provide the {YELLOW}temperature data{END} file (Accepted format: .csv)')
+        {CYAN}Options                                                            Description{END}
+           {YELLOW}(1) Yes. Upload a {YELLOW}.csv File{END} ------------------------------ File must contain a {YELLOW}\'Temperature\' and a \'Seconds\' column{END}, in {YELLOW}degrees C° and seconds{END} (recommended to use integer values, but not necessary).
+           {YELLOW}(2) Yes. Input a {YELLOW}Temperature Ramp{END} ----------- Input a value to represent the {YELLOW} decreasing change in degrees C° / second{END}, assuming the ramp begins at the {YELLOW}start of the video{END}. {RED}(+/- signs matter!){END}))
+           {YELLOW}(3) No. -------------------------------------------------- No temperature plots will be given. Only the intensity plots vs time will be shown.
+
+        ''')
+        ask_user_temperature = input(f'\n\n{GREEN}[USER INPUT] > {END}')
+        
+        if ask_user_temperature == '1':
+
+            temperature_file = print(f'\n{RED}[PROGRAM] > {END}Please provide the {YELLOW}temperature data{END} file (Accepted format: .csv). \nFile must contain the words {YELLOW}\'Temperature\' and a \'Time\'{END} in two separate column headers, in {YELLOW}degrees C° and seconds{END}. The position of the columns, or if there are other words attached to the header, does not matter. (Recommended to use integer values, but not necessary).')
 
             temperature_file = askopenfilename()
 
@@ -661,45 +678,60 @@ while True: # it seems that after video analysis, the data is stored in memory :
             ask_user_temperature_ready = True
 
             print(f"\n{RED}[SYSTEM] > {END}Does the temperature file exist: ", os.path.exists(temperature_file))
+        
+        elif ask_user_temperature == '2':
 
-        elif ask_user_temperature.lower() == 'n':
+            use_temperature_ramp = True
 
-            use_temperature_file = False
+            #print(f'\nPlease input a value to represent the {YELLOW} decreasing change in degrees C° / second{END}, assuming the ramp begins at the {YELLOW}start of the video.{END} {RED}(+/- signs matter!){END})
+
+            input_valid = False
+
+            while input_valid == False:
+            
+                ramp = input(f'\nPlease input a single value to represent the {YELLOW} decreasing change in degrees C° / second{END}, assuming the ramp begins at the {YELLOW}start of the video.{END} {RED}(+/- signs matter!){END})\n\n{GREEN}[USER INPUT] > {END}')
+
+                try:
+                    if isinstance(float(ramp), float):
+
+                        input_valid = True
+
+                        ramp = float(ramp)
+                
+                except:
+
+                    print(f'{RED}[PROGRAM] > {END}Invalid input. Please provide a float or integer value.')
+
+            input_valid = False
+
+            while input_valid == False:
+            
+                ramp_initial = input(f'\nPlease input the {YELLOW}initial temperature of the ramp in degrees C°{END} {RED}(+/- signs matter!){END}.\n\n{GREEN}[USER INPUT] > {END}')
+
+                try:
+                    if isinstance(float(ramp_initial), float):
+
+                        input_valid = True
+
+                        ramp_initial = float(ramp_initial)
+                
+                except:
+
+                    print(f'{RED}[PROGRAM] > {END}Invalid input. Please provide a float or integer value.')
+                    
+
+            ask_user_temperature_ready = True
+
+
+        elif ask_user_temperature == '3':
+
+            #use_temperature_file = False
 
             ask_user_temperature_ready = True
 
         else:
 
-            print(f'\n{RED}[PROGRAM] > {END}Invalid input. Please press {YELLOW}\'Y\'{END} or {YELLOW}\'N\'{END}.\n')
-
-    if use_temperature_file == True:
-
-        temperature_df = pd.read_csv(temperature_file)
-
-
-
-        temperature_df = temperature_df.iloc[:,0].str.split(';', expand = True) # iloc method allows us to pass the column's index position
-
-        # gets the time associated with each temperature
-
-        temperature_time = list(temperature_df.iloc[:,2].values)
-
-        temperature_time = [round(float(x), 0) for x in temperature_time] # convert list of strings to list of integers
-
-        # gets the real temperature data
-
-        temperature = list(temperature_df.iloc[:,1].values)
-
-        temperature = [float(x) for x in temperature] # convert list of strings to list of integers
-
-        #temperature_df.columns = ['Target Temperature', 'Real Temperature', 'Time']
-
-        #temperature_df[2] = temperature_df.round({'Time': 0})
-        
-        #print('temperature time df check 1', temperature_time, 'temperature check', temperature)
-        
-
-
+            print(f'\n{RED}[PROGRAM] > {END}Invalid input. Please select an option (1-3).\n')
 
     
     x = input(f'\n{RED}[PROGRAM] > {END}To save the data as a .csv file and to show the plotted graphs, press {YELLOW}[ENTER]{END}.\n\n{GREEN}[USER INPUT] > {END}')
@@ -711,46 +743,29 @@ while True: # it seems that after video analysis, the data is stored in memory :
     if cv2.waitKey(1) == ord('r'): #27: # Escape key ASCII is 27. If R is pressed on video instead of console.
         break
 
-    
 
 
 timestr = time.strftime("%Y%m%d_%H%M%S")
-#print(timestr)
+
 csv_name = timestr + '_' + ntpath.basename(filename) # get base name of file directory path
-
-'''
-frame_time = []
-for i in frame_axes:
-    ctime = 0
-    if platform.system() == 'Windows':
-        ctime = time.ctime(os.path.getmtime(filename))
-        frame_time.append(ctime)
-    else:
-        print('NO DATE OR TIME AVAILABLE. Sorry, I did not implement the code for inter-system conversion of date-time properties. It is possible, you just have to implement the code. I have attached a useful link that shows the code to do this where the code for this text exists. Goodluck :)')
-        #https://stackoverflow.com/questions/237079/how-do-i-get-file-creation-and-modification-date-times
-'''
-
-# if no temperature data is available, the frame vs change in intensity plots will be given.
-# if temperature data is given, plots temperature vs change in intensity
-
-
 
 video_seconds = []
 
 for i in video_milliseconds:
+
     video_seconds.append(i/1000)
 
-# gets time associated with each measured temperature
-#temperature_seconds = temperature_df.iloc[:,2]
-#print('temp', temperature_seconds)
-
-# gets temperature associated with each time
-
-
 cap.release()
+
 cv2.destroyAllWindows
 
+
 figure, axis = plt.subplots(2, 2, figsize=(30,15)) # width, height
+
+DDG.plot_intensity_vs_seconds(intensity_axes, video_seconds, axis)
+
+DDG.plot_dintensity_vs_seconds(intensity_difference_axes, video_seconds, axis)
+
 
 circle_radii = []
 circle_freezing_temperatures = []
@@ -759,6 +774,62 @@ save_path = os.path.join(os.environ["USERPROFILE"], "Desktop")
 
 if use_temperature_file == True:
     
+    df = pd.read_csv(temperature_file)
+
+    #temperature_df = temperature_df.iloc[:,0].str.split(';', expand = True) # iloc method allows us to pass the column's index position
+
+    # gets the time associated with each temperature
+
+    temperature_time = []
+
+    for col in df.columns:
+
+        if 'time' in col.lower():
+
+            print(f'\n{RED}[PROGRAM] > {END}Time column successfully detected in the provided file!')
+
+            temperature_time = df[col].values
+
+            #temperature_time = [round(float(x), 2) for x in temperature_time]
+
+            print(temperature_time)
+
+            break # only take the first instance 
+
+    #temperature_time = list(temperature_df.iloc[:,2].values)
+
+    #temperature_time = [round(float(x), 0) for x in temperature_time] # convert list of strings to list of integers
+
+    # gets the real temperature data
+
+    temperature = []
+
+    for col in df.columns:
+
+        if 'temperature' in col.lower() or 'temp' in col.lower():
+
+            print(f'\n{RED}[PROGRAM] > {END}Temperature column successfully detected in the provided file!')
+
+            temperature = df[col].values
+
+            temperature = [round(float(x), 2) for x in temperature]
+
+            print(temperature)
+
+            break # only take the first instance
+
+    if len(temperature_time) == 0:
+        print(f'\n{RED}[PROGRAM] > {END}[ERROR] > Time column not found in the provided file!')
+
+    if len(temperature) == 0:
+        print(f'\n{RED}[PROGRAM] > {END}[ERROR] > Temperature column not found in the provided file!')
+
+
+    #temperature = list(temperature_df.iloc[:,1].values)
+
+    #temperature = [float(x) for x in temperature] # convert list of strings to list of integers
+
+
 
     temperature_axes, temperature_time_axes = DDG.get_temperature_axes(video_seconds, temperature_time, temperature)
     modified_temperature_axes = DDG.get_correct_temperature_axes(intensity_axes, temperature_axes)
@@ -787,11 +858,58 @@ if use_temperature_file == True:
 
     export_radii_freezing = pd.DataFrame(c)
 
-    export_radii_freezing.to_csv(save_path + '/GIN/' + csv_name + '_radii_and_temperature.csv')
+    export_radii_freezing.to_csv(save_path + '/GIN/' + csv_name + '_radii_freezing_(CSV_INPUT).csv')
 
-DDG.plot_intensity_vs_seconds(intensity_axes, video_seconds, axis)
+if use_temperature_ramp == True:
 
-DDG.plot_dintensity_vs_seconds(intensity_difference_axes, video_seconds, axis)
+    ramp_temperatures = []
+
+
+    int_video_seconds = [round(x,0) for x in video_seconds] # round values to be integers.
+
+    for i in int_video_seconds:
+        
+        ramp_temperatures.append(round(ramp_initial + ramp * i, 5))
+
+    ramp_time = int_video_seconds
+
+    #for i in ramp_temperatures:
+
+    #    ramp_time.append((i - ramp_temperatures[0]) / ramp) # subtract from target_temperatures[0] to get 0 seconds at the initial temperature
+
+
+    # sort through this!
+    temperature_axes, temperature_time_axes = DDG.get_temperature_axes(video_seconds, ramp_time, ramp_temperatures)
+    modified_temperature_axes = DDG.get_correct_temperature_axes(intensity_axes, temperature_axes)
+    intensity_axes_for_temperature = DDG.get_correct_intensity_axes(intensity_axes, modified_temperature_axes)
+
+    DDG.plot_time_and_dintensity_heatmap(intensity_difference_axes, video_seconds, modified_temperature_axes, temperature_time_axes, axis)
+
+    min_intensity_all_temperatures = DDG.get_freezing_temperature(intensity_difference_axes, video_seconds, temperature_axes, temperature_time_axes)
+
+    bin_data_list, bin_edges, label_names = DDG.get_boxplot_data_by_radii(calib_r_list, min_intensity_all_temperatures)
+
+    DDG.plot_boxplot(bin_data_list, bin_edges, label_names, axis)
+
+    # only plot points if the time data between temperature csv file and the video time data match.
+    for i in range(len(bin_data_list)):
+
+        for t in range(len(bin_data_list[i])):
+
+            circle_radii.append(bin_data_list[i][t][0])
+            circle_freezing_temperatures.append(bin_data_list[i][t][1])
+
+    c = {'Radii (um)': circle_radii, 'Freezing Temperature (C)': circle_freezing_temperatures}
+
+    export_radii_freezing = pd.DataFrame(c)
+
+    export_radii_freezing.to_csv(save_path + '/GIN/' + csv_name + '_radii_freezing_(RAMP_INPUT).csv')
+
+
+
+
+
+
 
 d = {'Frame Time (seconds)': video_seconds, 'Frames Axes': frame_axes}
 

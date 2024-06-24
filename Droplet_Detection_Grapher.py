@@ -181,19 +181,42 @@ def get_temperature_axes(video_seconds, temperature_time, temperature):
 
     int_video_seconds = [round(x,0) for x in video_seconds] # round values to be integers.
 
-    for i in range(len(temperature_time)):
+    for i in range(len(int_video_seconds)):
         
         #print('temp df index', temperature_df[2][i], 'video secs', video_seconds)
-
+        '''
         if temperature_time[i] in int_video_seconds:
 
             temperature_axes.append(float(temperature[i])) # add the corresponding temperature data to the axes to be plotted
             temperature_time_axes.append(float(temperature_time[i]))
             #print('temp this', temperature[i], 'temp time this', temperature_time[i], 'vid time this', video_seconds)
 
-    #print('temp axes final', temperature_axes)
-    #print('temp axes', temperature_axes, len(temperature_axes), 'temp time', temperature_time, 'temp time axes', temperature_time_axes, len(temperature_time_axes))
-    #print('vid sec', video_seconds, 'int vid sec', int_video_seconds)
+        '''
+
+        for t in range(len(temperature_time)):
+
+            try: # try takes care for if one of the lists (temperature time, or int vid secs, is longer than the other and thus lacks t+1)
+
+                if int_video_seconds[i] >= temperature_time[t] and int_video_seconds[i] < temperature_time[t+1]: # locating the two temperature time values that the video time value of the change in intensity lies between
+
+                    mid_point_of_tempperature_values = (temperature_time[t+1] - temperature_time[t]) / 2 # find mid point so I can round the vid time to the nearest temperature time data point
+
+                    if int_video_seconds[i] <= temperature_time[t] + mid_point_of_tempperature_values: # if vid time is closer to the left most boundary of temp time datas
+                        
+                        temperature_axes.append(float(temperature[t])) # add the corresponding temperature data to the axes to be plotted
+
+                        temperature_time_axes.append(float(temperature_time[t]))
+
+                    elif int_video_seconds[i] > temperature_time[t] + mid_point_of_tempperature_values: 
+
+                        temperature_axes.append(float(temperature[t+1])) # add the corresponding temperature data to the axes to be plotted
+
+                        temperature_time_axes.append(float(temperature_time[t+1]))
+            
+            except:
+                dummy = 1
+
+
     return temperature_axes, temperature_time_axes
 
 
