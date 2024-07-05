@@ -95,8 +95,8 @@ def selected_circles_on_frame_and_label(selection_list: list, selection_frame, c
             x = i[0]
             y = i[1]
 
-            selection_frame = cv2.putText(selection_frame, str(i[4]), (x-40, y+10), font, 1, (0, 0, 0), 8, cv2.LINE_AA) # text outline
-            selection_frame = cv2.putText(selection_frame, str(i[4]), (x-40, y+10), font, 1, (0, 255, 100), 2, cv2.LINE_AA) # i+1 so the first circle isnt labelled as '0'
+            selection_frame = cv2.putText(selection_frame, '#' + str(i[4]), (x-70, y+10), font, 1.5, (0, 0, 0), 10, cv2.LINE_AA) # text outline
+            selection_frame = cv2.putText(selection_frame, '#' + str(i[4]), (x-70, y+10), font, 1.5, (0, 255, 100), 2, cv2.LINE_AA) # i+1 so the first circle isnt labelled as '0'
 
             # radius label
 

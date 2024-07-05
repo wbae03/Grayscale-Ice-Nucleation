@@ -72,6 +72,7 @@ LBLUE = "\033[94m"
 END = "\033[0m"
 BOLD = "\033[1m"
 
+
 #os.system('cls') # clear console
 
 def banner():
@@ -92,6 +93,7 @@ def banner():
     print(font)
 
 banner()
+
 
 # CUSTOMIZABLE PARAMETERS
 
@@ -128,6 +130,7 @@ calibration_ratio = 0
 close_calib_window = False
 
 finished_drawing = False
+
 
 while not ask_user_calib_ready: # While loop ensures the user prompts are repeated if the user input is invalid (ie not 'y' or 'n')
 
@@ -267,18 +270,38 @@ elif use_calib_image == False:
     
 
 
-#calib_length = calc_distance(line_coords)
-#print('calib length: ', calib_length)
-
 # LOAD VIDEO
 
 print(f'\n{RED}[PROGRAM] > {END} Please provide the file directory of the {YELLOW}video data{END} (Accepted formats: .avi, .mp4, .mkv)')
 #time.sleep(1)
 filename = askopenfilename()
 
+
+# MAKE SAVE DIRECTORY
+
+timestr = time.strftime("%Y%m%d_%H%M%S")
+
+csv_name = timestr + '_' + ntpath.basename(filename) # get base name of file directory path
+
+os.environ["USERPROFILE"]
+save_path = os.path.join(os.environ["USERPROFILE"], "Desktop")
+
+try:
+    os.mkdir(save_path + '/GIN/' + csv_name)
+
+    print(f"\n{RED}[PROGRAM] > {END}Directory '% s' created!" % csv_name)
+
+except FileExistsError:
+
+    print(f"\n{RED}[PROGRAM] > {END}Directory '% s' already exists! This should not be possible, given that the time used in the file name should be unique as time never stops for anyone..." % csv_name)
+
+directory = os.path.join(save_path, 'GIN', csv_name)
+
+
 cap = cv2.VideoCapture(filename)
 cap1 = cv2.VideoCapture(filename)
 cap2 = cv2.VideoCapture(filename)
+cap3 = cv2.VideoCapture(filename)
 
 total_frame_count = cap2.get(cv2.CAP_PROP_FRAME_COUNT)
 fps = cap2.get(cv2.CAP_PROP_FPS)
@@ -324,19 +347,19 @@ while True: # makes sure the video loaded + frames are able to be captured
     if stop_reiterating == False:
         if ret:
             print(f'\n{RED}[SYSTEM] > {END}\n') 
-            print(f'Selected file: {YELLOW}', filename, f'{END}')
+            print(f'{CYAN}Selected File:{END} {YELLOW}', filename, f'{END}')
             print(f'\n{CYAN}    Video Property                       Value{END}')
             print(f'Total frame count of video ----------- {YELLOW}[', total_frame_count, f']{END}')
             print(f'The detected video FPS --------------- {YELLOW}[', fps, f']{END}')
             print(f'Duration of the video: --------------- {YELLOW}[', round(duration, 2), f' sec ]{END}, or {YELLOW}[', str(minutes), f' min', str(round(seconds, 2)), f' sec ]{END}')
             frame_count_input = input(f'\nPlease enter an {YELLOW}integer for the interval of frames to be analyzed{END}. If no input is given, the FPS of the video will be used instead.\n({YELLOW}TIP:{END} to anayze every n seconds of the video, enter the product of FPS * n.) \n\n{GREEN}[USER INPUT] > {END}')
 
-            if frame_count_input.isnumeric():
-                frame_count = float(frame_count_input)
+            if isinstance(int(frame_count_input), int):
+                frame_count = int(frame_count_input)
                 print(f'\n{RED}[PROGRAM] > {END}The analysis will occur every {YELLOW}[', frame_count,f'] frames{END}.')
 
             else:
-                frame_count =  fps # if no int is given, resort to default fps setting of the video as the frame interval
+                frame_count =  round(fps,0) # if no int is given, resort to default fps setting of the video as the frame interval
                 print(f'\n{RED}[PROGRAM] > {END}No frame count was given. The analysis will resort to analyzing every {YELLOW}[', frame_count,f'] frames{END}.')
 
 
@@ -382,6 +405,7 @@ while True: # makes sure the video loaded + frames are able to be captured
                     cv2.moveWindow(n,10,50)
                     DDU.show_window(n, frame_copy, size_ratio, cap, filename)
 
+                    cv2.imwrite(os.path.join(directory, f'{csv_name}_Detected_Circles.jpg'), frame_copy)
                     #user_circle_detection_ready_input = input(f'\n{RED}[PROGRAM] > {END}To switch the circle detection sensitivity, please re-select an option. \nOtherwise, please press {YELLOW}[ENTER]{END} to proceed with the analysis. \n\n{GREEN}[USER INPUT] > {END}')
             
                     if user_circle_detection_ready_input == True:
@@ -448,6 +472,9 @@ while True:
         cv2.setWindowProperty(m, cv2.WND_PROP_TOPMOST, 1)
         cv2.moveWindow(m,10,50)
         DDU.show_window(m, selection_frame, size_ratio, cap1, filename)
+
+        cv2.imwrite(os.path.join(directory, f'{csv_name}_Selected_Circles.jpg'), selection_frame)
+
         
         
 
@@ -498,7 +525,7 @@ while True:
 
     t = threading.Thread(target=animate)
     t.start()
-    
+    #print('hit1')
     break
     #===========================
 
@@ -509,8 +536,18 @@ frame_axes = []
 
 while True: # this analyzes the video. IMPORTANT: MINIMIZE FUNCTIONS IN THIS LOOP TO SPEED UP ANALYSIS.
 
+
+    #cap2.get(cv2.CAP_PROP_POS_FRAMES)/total_frame_count
+
+    #print('hit2')
+
+    #print('cap prop pos frame', cap2.get(cv2.CAP_PROP_POS_FRAMES), 'total frame count', total_frame_count)
+
+
+    
     ret, video = cap2.read()
-    if not ret: 
+
+    if not ret or cap2.get(cv2.CAP_PROP_POS_FRAMES) >= total_frame_count: 
         done = True
         break
 
@@ -645,8 +682,43 @@ while True: # it seems that after video analysis, the data is stored in memory :
     frame_id = int(cap2.get(cv2.CAP_PROP_POS_FRAMES)) # for some reason, this doesnt start from 1 and go to the final frame, even while looping; it gives the final total frame count right away!! I suspect its because the video was alraedy read in the prev loop (data stored in memory?)
 
     intensity_axes = DDG.get_intensity_axes(video_BGR_data)
+
     intensity_difference_axes = DDG.get_intensity_difference_axes(intensity_axes)
-    #print('checkpoint 1', intensity_difference_axes)
+
+
+
+    # Save jpg of frame when very last droplet freezes (the very last maximal change in intensity across all circles)
+
+
+    frame_x = frame_axes[0: -1] # get entire list except for the last element (must match amount of elements in frame axis to agree with difference axis)
+
+    min_dintensity_values = [sublist.index(min(sublist)) for sublist in intensity_difference_axes]
+
+    print('int diff ax', intensity_difference_axes, 'min', min_dintensity_values)
+
+    max_of_min_index = max(min_dintensity_values)
+
+    try:
+        frozen_frame_number = frame_x[max_of_min_index+1] # try to get the next frame after all is frozen, to ensure the frame contains everything frozen. This is especially useful when analyzing videos in huge frame intervals.
+    
+    except:
+        frozen_frame_number = frame_x[max_of_min_index] 
+     
+
+    cap3.set(cv2.CAP_PROP_POS_FRAMES, frozen_frame_number)
+
+    ret, frozen_frame = cap3.read()
+
+    if not ret: break
+
+    frozen_frame, calib_r_list = DDS.selected_circles_on_frame_and_label(selection_list, frozen_frame, calibration_ratio)
+
+    frozen_frame = DDU.get_frame_id(frozen_frame, cap3)
+
+    print('frozen frac num', frozen_frame_number)
+
+    cv2.imwrite(os.path.join(directory, f'{csv_name}_All_Frozen_Circles.jpg'), frozen_frame)
+
 
     end_time = time.time()
     elapsed_time = round(end_time - start_time, 2)
@@ -657,8 +729,10 @@ while True: # it seems that after video analysis, the data is stored in memory :
     while not ask_user_temperature_ready:
 
         print(f'\n{RED}[PROGRAM] > {END}Would you like to attach temperature data to the analyzed circles? Please choose an option below.')
-        print(f'''
 
+        print(f'\n{CYAN}Previously Selected Video File:{END} {YELLOW}', filename, f'{END}')
+
+        print(f'''
         {CYAN}Options                                                            Description{END}
            {YELLOW}(1) Yes. Upload .csv File{END} ----------- File must contain a {YELLOW}\'Temperature\' (C) and a \'Seconds\' column{END}.
            {YELLOW}(2) Yes. Input a Temperature Ramp{END} ----- Input the {YELLOW}change in degrees C° / second{END} beginning at the video start {RED}(+/- signs matter!).{END}))
@@ -669,7 +743,7 @@ while True: # it seems that after video analysis, the data is stored in memory :
         
         if ask_user_temperature == '1':
 
-            temperature_file = print(f'\n{RED}[PROGRAM] > {END}Please provide the {YELLOW}temperature data{END} file (Accepted format: .csv). \nFile must contain the words {YELLOW}\'Temperature\' and a \'Time\'{END} in two separate column headers, in {YELLOW}degrees C° and seconds{END}. The position of the columns, or if there are other words attached to the header, does not matter. (Recommended to use integer values, but not necessary).')
+            temperature_file = print(f'\n{RED}[PROGRAM] > {END}Please provide the {YELLOW}temperature data{END} file (Accepted format: .csv). \nFile must contain the words {YELLOW}\'Temperature\' and a \'Time\'{END} in two separate column headers, in {YELLOW}degrees C° and seconds{END}. \nThe position of the columns, or if there are other words attached to the header, does not matter. \n(Recommended to use integer values, but not necessary).')
 
             temperature_file = askopenfilename()
 
@@ -745,9 +819,6 @@ while True: # it seems that after video analysis, the data is stored in memory :
 
 
 
-timestr = time.strftime("%Y%m%d_%H%M%S")
-
-csv_name = timestr + '_' + ntpath.basename(filename) # get base name of file directory path
 
 video_seconds = []
 
@@ -760,17 +831,20 @@ cap.release()
 cv2.destroyAllWindows
 
 
-figure, axis = plt.subplots(2, 2, figsize=(30,15)) # width, height
+fig1, axis = plt.subplots(2, 2, figsize=(30,15)) # width, height
 
 DDG.plot_intensity_vs_seconds(intensity_axes, video_seconds, axis)
 
 DDG.plot_dintensity_vs_seconds(intensity_difference_axes, video_seconds, axis)
 
 
+
 circle_radii = []
+
 circle_freezing_temperatures = []
-os.environ["USERPROFILE"]
-save_path = os.path.join(os.environ["USERPROFILE"], "Desktop")
+# Create or use a directory to store the GIN data.
+
+
 
 if use_temperature_file == True:
     
@@ -803,6 +877,7 @@ if use_temperature_file == True:
     # gets the real temperature data
 
     temperature = []
+
 
     for col in df.columns:
 
@@ -840,13 +915,18 @@ if use_temperature_file == True:
 
     min_intensity_all_temperatures = DDG.get_freezing_temperature(intensity_difference_axes, video_seconds, temperature_axes, temperature_time_axes)
 
+    #print('min int all temp', min_intensity_all_temperatures, 'calib r list', calib_r_list)
+
+
+
+    # IF I WANT BOXPLOTS USE THE CODE BELOW 
+    # ------
+    '''
     bin_data_list, bin_edges, label_names = DDG.get_boxplot_data_by_radii(calib_r_list, min_intensity_all_temperatures)
 
     DDG.plot_boxplot(bin_data_list, bin_edges, label_names, axis)
 
-    # only plot points if the time data between temperature csv file and the video time data match.
-    #paired_intensity_difference_to_temperature = DDG.get_dintensity_matched_to_temperature(intensity_difference_axes, video_seconds, temperature_df)
-    #DDG.plot_dintensity_vs_temperature(paired_intensity_difference_to_temperature, axis)
+
     for i in range(len(bin_data_list)):
 
         for t in range(len(bin_data_list[i])):
@@ -854,11 +934,25 @@ if use_temperature_file == True:
             circle_radii.append(bin_data_list[i][t][0])
             circle_freezing_temperatures.append(bin_data_list[i][t][1])
 
+
     c = {'Radii (um)': circle_radii, 'Freezing Temperature (C)': circle_freezing_temperatures}
 
     export_radii_freezing = pd.DataFrame(c)
 
-    export_radii_freezing.to_csv(save_path + '/GIN/' + csv_name + '_radii_freezing_(CSV_INPUT).csv')
+    export_radii_freezing.to_csv(os.path.join(directory, f'{csv_name}_radii_freezing_(CSV_INPUT).csv')) # use os.path.join() to properly concatenate paths and filenames.
+
+    '''
+    # --------
+    # OTHERWISE USE RADII VS TEMP PLOT
+    
+    calib_r_list_sorted, min_intensity_all_temperatures_sorted = DDG.plot_radii_vs_temperatures(calib_r_list, min_intensity_all_temperatures, axis)
+
+    c = {'Radii (um)': calib_r_list_sorted, 'Freezing Temperature (C)': min_intensity_all_temperatures_sorted}
+
+    export_radii_freezing = pd.DataFrame(c)
+
+    export_radii_freezing.to_csv(os.path.join(directory, f'{csv_name}_radii_freezing_(CSV_INPUT).csv')) # use os.path.join() to properly concatenate paths and filenames.
+
 
 if use_temperature_ramp == True:
 
@@ -887,6 +981,8 @@ if use_temperature_ramp == True:
 
     min_intensity_all_temperatures = DDG.get_freezing_temperature(intensity_difference_axes, video_seconds, temperature_axes, temperature_time_axes)
 
+
+    '''
     bin_data_list, bin_edges, label_names = DDG.get_boxplot_data_by_radii(calib_r_list, min_intensity_all_temperatures)
 
     DDG.plot_boxplot(bin_data_list, bin_edges, label_names, axis)
@@ -903,11 +999,16 @@ if use_temperature_ramp == True:
 
     export_radii_freezing = pd.DataFrame(c)
 
-    export_radii_freezing.to_csv(save_path + '/GIN/' + csv_name + '_radii_freezing_(RAMP_INPUT).csv')
+    export_radii_freezing.to_csv(os.path.join(directory, f'{csv_name}_radii_freezing_(RAMP_INPUT).csv'))
+    '''
 
+    calib_r_list_sorted, min_intensity_all_temperatures_sorted = DDG.plot_radii_vs_temperatures(calib_r_list, min_intensity_all_temperatures, axis)
 
+    c = {'Radii (um)': calib_r_list_sorted, 'Freezing Temperature (C)': min_intensity_all_temperatures_sorted}
 
+    export_radii_freezing = pd.DataFrame(c)
 
+    export_radii_freezing.to_csv(os.path.join(directory, f'{csv_name}_radii_freezing_(CSV_INPUT).csv')) # use os.path.join() to properly concatenate paths and filenames.
 
 
 
@@ -919,9 +1020,9 @@ for i in range(len(intensity_axes)):
 
     export_intensity_differences['Avg Grayscale Intensity of Circle' + str(i+1)] = intensity_axes[i]
 
-export_intensity_differences.to_csv(save_path + '/GIN/' + csv_name + '_intensity_change.csv')
+export_intensity_differences.to_csv(os.path.join(directory, f'{csv_name}_intensity_change.csv'))
 
-plt.savefig(save_path + '/GIN/' + csv_name + '_all_plots.png')
+fig1.savefig(os.path.join(directory, f'{csv_name}_Intensity_Plots.png'))
 
 end_banner = f'''\n
 {CYAN}
@@ -934,6 +1035,33 @@ end_banner = f'''\n
                    END OF PROGRAM! 
 {END}
 '''
+
+
+x, y = DDG.get_frozen_fraction_data(min_intensity_all_temperatures)
+
+fig2, axis2 = plt.subplots(1, 1, figsize=(15, 10))
+
+# Customizing the scatter plot with marker and color options
+# 'c' sets the color, 'marker' sets the marker style, and 's' sets the marker size
+f1 = axis2.scatter(x, y, c='#219fe4', marker='o', s=100)
+
+axis2.set_title(f'Frozen Fraction Plot of {csv_name}')
+axis2.grid(linestyle='--', alpha=0.3)
+axis2.tick_params(axis='x', labelsize=18)
+axis2.tick_params(axis='y', labelsize=18)
+axis2.set_xlabel('Temperature (ºC)', fontsize=18)
+axis2.set_ylabel(f'Frozen Fraction (n={len(min_intensity_all_temperatures)})', fontsize=18)
+
+fig2.savefig(os.path.join(directory, f'{csv_name}_Frozen_Fraction.png'))
+
+
+z = {'Frozen Fraction)': y, 'Freezing Temperature (ºC)': x}
+
+export_frozen_fraction = pd.DataFrame(z)
+
+export_frozen_fraction.to_csv(os.path.join(directory, f'{csv_name}_Frozen_Fraction.csv'))
+
+
 print(end_banner)
 plt.show()
 root.destroy() # destroy tkinter windows

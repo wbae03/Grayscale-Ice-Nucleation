@@ -308,13 +308,14 @@ def plot_time_and_dintensity_heatmap(dintensity_axes, video_seconds, temperature
     
     # Set x-ticks to every 10 units and labels
     #axis[0, 2].xaxis.set_major_locator(MultipleLocator(10))
-    ax.set_xticks(range(0, len(video_seconds), 10))  # Ensure ticks every 50 units
-    ax.set_xticklabels(video_seconds[::10], fontsize=7, rotation=45, ha='right')
+    rounded_video_seconds = [round(x, 2) for x in video_seconds]
+    ax.set_xticks(range(0, len(rounded_video_seconds), 10))  # Ensure ticks every 50 units
+    ax.set_xticklabels(rounded_video_seconds[::10], fontsize=7, rotation=45, ha='right')
     # the resulting ticks will be the time of analysis * the step interval defined above
 
     # Set titles and labels
     ax.set_title('')
-    ax.set_xlabel('Time (seconds)')
+    ax.set_xlabel('Analyzed Time Points (seconds)')
     ax.set_ylabel('Circles')
 
     # create a second x-axis above the plot using the twin function which creates an x axis with the same y axis
@@ -401,13 +402,28 @@ def get_freezing_temperature(intensity_difference_axes, video_seconds, temperatu
     #print('get temp min int all temp', min_intensity_all_temperatures)
     return min_intensity_all_temperatures
 
+def plot_radii_vs_temperatures(calib_r_list, min_intensity_all_temperatures, axis):
+
+    boxp = axis[1,1]
+
+    calib_r_list_sorted, min_intensity_all_temperatures_sorted = (list(t) for t in zip(*sorted(zip(calib_r_list, min_intensity_all_temperatures))))
+
+    boxp.scatter(calib_r_list_sorted, min_intensity_all_temperatures_sorted)
+    boxp.set_xlabel('Radius (um)')
+    boxp.set_ylabel('Freezing Temperature (ºC)')
+    boxp.set_title(f'Freezing Activity Based on Droplet Radii (n={len(min_intensity_all_temperatures)})')
+
+    return calib_r_list_sorted, min_intensity_all_temperatures_sorted
+
 
 def get_boxplot_data_by_radii(calib_r_list, min_intensity_all_temperatures):
 
 
     #Customizable things:
-    label_names = ['A', 'B', 'C']
-    amt_of_equal_sized_bins = 3
+    #label_names = ['A', 'B', 'C']
+    label_names = ['A']
+
+    amt_of_equal_sized_bins = 1
 
     # DIAGNOSTIC PURPOSES 
     # print('calib r list', len(calib_r_list), calib_r_list, 'min intensity all temp', len(min_intensity_all_temperatures), min_intensity_all_temperatures)
@@ -480,5 +496,18 @@ def plot_boxplot(bin_data_list, bin_edges, label_names, axis):
     boxp.boxplot(freezing_temperatures, showmeans=True)
     boxp.set_xticklabels(label_names)
     boxp.set_xlabel('Bins')
-    boxp.set_ylabel('Freezing Temperature (C)')
+    boxp.set_ylabel('Freezing Temperature (ºC)')
     boxp.set_title('Boxplots of Freezing Activity Based on Radius')
+
+def get_frozen_fraction_data(min_intensity_all_temperatures):
+
+    y = []
+
+    for i in range(len(min_intensity_all_temperatures)):
+
+        y.append((i+1)/len(min_intensity_all_temperatures))
+
+    x = sorted(min_intensity_all_temperatures, reverse=True)
+
+    return x, y
+    

@@ -240,10 +240,10 @@ def frame_overlay_label(areas_sorted: list, frame, calibration_ratio):
         areas_sorted[i].append(circle_number) # by this point, each circle has 5 associated properties in this order: [xpos, ypos, radius, xy area, circle # ranked by area]
         #print(x, y)
 
-        frame = cv2.putText(frame, '#' + str(i+1), (x-60, y+10), font, 1, (0, 0, 0), 8, cv2.LINE_AA) # text outline
-        frame = cv2.putText(frame, '#' + str(i+1), (x-60, y+10), font, 1, (0, 255, 100), 2, cv2.LINE_AA) # i+1 so the first circle isnt labelled as '0'
+        frame = cv2.putText(frame, '#' + str(i+1), (x-70, y+10), font, 1.5, (0, 0, 0), 10, cv2.LINE_AA) # text outline
+        frame = cv2.putText(frame, '#' + str(i+1), (x-70, y+10), font, 1.5, (0, 255, 100), 2, cv2.LINE_AA) # i+1 so the first circle isnt labelled as '0'
 
-        # radius label
+        # radius label1
 
         r = areas_sorted[i][2] # radius in pixels
         calib_r = round(float(r) / float(calibration_ratio), 2) # radius in micrometer length
