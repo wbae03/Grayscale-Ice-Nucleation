@@ -83,7 +83,7 @@ def banner():
  / /_\/ '__/ _` | | | / __|/ __/ _` | |/ _ \    / /\/ __/ _ \  /  \/ / | | |/ __| |/ _ \/ _` | __| |/ _ \| '_ \ 
 / /_\\| | | (_| | |_| \__ \ (_| (_| | |  __/ /\/ /_| (_|  __/ / /\  /| |_| | (__| |  __/ (_| | |_| | (_) | | | |
 \____/|_|  \__,_|\__, |___/\___\__,_|_|\___| \____/ \___\___| \_\ \/  \__,_|\___|_|\___|\__,_|\__|_|\___/|_| |_|
-                 |___/                                                                  {BOLD}Version 1.6.0{END}                                              
+                 |___/                                                                  {BOLD}Version 1.8.0{END}                                              
 {END}
     {GREEN}> {END}William Bae | NBD Group @ UBC Chemistry     {GREEN}> {END}www.github.com/wbae03     {GREEN}> {END}LinkedIn: wbae03
 
@@ -279,9 +279,9 @@ filename = askopenfilename()
 
 # MAKE SAVE DIRECTORY
 
-timestr = time.strftime("%Y%m%d_%H%M%S")
+#timestr = time.strftime("%Y%m%d_%H%M%S")
 
-csv_name = timestr + '_' + ntpath.basename(filename) # get base name of file directory path
+csv_name = ntpath.basename(filename) # get base name of file directory path
 
 os.environ["USERPROFILE"]
 save_path = os.path.join(os.environ["USERPROFILE"], "Desktop")
@@ -352,6 +352,27 @@ while True: # makes sure the video loaded + frames are able to be captured
             print(f'Total frame count of video ----------- {YELLOW}[', total_frame_count, f']{END}')
             print(f'The detected video FPS --------------- {YELLOW}[', fps, f']{END}')
             print(f'Duration of the video: --------------- {YELLOW}[', round(duration, 2), f' sec ]{END}, or {YELLOW}[', str(minutes), f' min', str(round(seconds, 2)), f' sec ]{END}')
+
+            analysis_start_time = input(f'\n{RED}[PROGRAM] > {END}Enter the {YELLOW}starting time{END} of the video you wish to analyze, in integer seconds.\n\n{GREEN}[USER INPUT] > {END}')
+
+            if isinstance(int(analysis_start_time), int):
+                analysis_start_time = float(analysis_start_time)
+                print(f'\n{RED}[PROGRAM] > {END}The analysis will start from {YELLOW}[', analysis_start_time,f'] seconds{END}.')
+
+            else:
+                analysis_start_time =  0 # if no int is given, resort to default fps setting of the video as the frame interval
+                print(f'\n{RED}[PROGRAM] > {END}No start time was given. The analysis will begin at {YELLOW}0 seconds{END}.')
+
+            analysis_end_time = input(f'\n{RED}[PROGRAM] > {END}Enter the {YELLOW}final time{END} of the video you wish to analyze, in integer seconds.\n\n{GREEN}[USER INPUT] > {END}')
+
+            if isinstance(int(analysis_end_time), int):
+                analysis_end_time = float(analysis_end_time)
+                print(f'\n{RED}[PROGRAM] > {END}The analysis will end when the video is at {YELLOW}[', analysis_end_time,f'] seconds{END}.')
+
+            else:
+                analysis_end_time =  total_frame_count # if no int is given, resort to default fps setting of the video as the frame interval
+                print(f'\n{RED}[PROGRAM] > {END}No end time was given. The analysis will end at {YELLOW}{total_frame_count} seconds{END}.')
+
             frame_count_input = input(f'\nPlease enter an {YELLOW}integer for the interval of frames to be analyzed{END}. If no input is given, the FPS of the video will be used instead.\n({YELLOW}TIP:{END} to anayze every n seconds of the video, enter the product of FPS * n.) \n\n{GREEN}[USER INPUT] > {END}')
 
             if isinstance(int(frame_count_input), int):
@@ -405,7 +426,7 @@ while True: # makes sure the video loaded + frames are able to be captured
                     cv2.moveWindow(n,10,50)
                     DDU.show_window(n, frame_copy, size_ratio, cap, filename)
 
-                    cv2.imwrite(os.path.join(directory, f'{csv_name}_Detected_Circles.jpg'), frame_copy)
+                    cv2.imwrite(os.path.join(directory, f'{csv_name}_Image_of_Detected_Circles.jpg'), frame_copy)
                     #user_circle_detection_ready_input = input(f'\n{RED}[PROGRAM] > {END}To switch the circle detection sensitivity, please re-select an option. \nOtherwise, please press {YELLOW}[ENTER]{END} to proceed with the analysis. \n\n{GREEN}[USER INPUT] > {END}')
             
                     if user_circle_detection_ready_input == True:
@@ -473,7 +494,7 @@ while True:
         cv2.moveWindow(m,10,50)
         DDU.show_window(m, selection_frame, size_ratio, cap1, filename)
 
-        cv2.imwrite(os.path.join(directory, f'{csv_name}_Selected_Circles.jpg'), selection_frame)
+        cv2.imwrite(os.path.join(directory, f'{csv_name}_Image_of_Selected_Circles.jpg'), selection_frame)
 
         
         
@@ -509,6 +530,13 @@ while True:
     #==========================
     # animated loading screen !!
     done = False
+
+    analysis_start_frame = analysis_start_time * fps
+
+    analysis_end_frame = analysis_end_time * fps
+
+    frame_range = analysis_end_frame - analysis_start_frame
+
     #here is the animation
     def animate():
 
@@ -518,7 +546,7 @@ while True:
                                   ' ❆  ... ']): 
             if done:
                 break
-            sys.stdout.write(f'\r{RED}[PROGRAM] > {END}Loading... ' + str(round(cap2.get(cv2.CAP_PROP_POS_FRAMES)/total_frame_count*100, 2)) + f'%{CYAN}' + c + f'{END}') #+ str(round(cap2.get(cv2.CAP_PROP_POS_FRAMES)/total_frame_count*100, 2)) + '%' + c)
+            sys.stdout.write(f'\r{RED}[PROGRAM] > {END}Loading... ' + str(round((analysis_end_frame - cap2.get(cv2.CAP_PROP_POS_FRAMES))/frame_range*100, 2)) + f'%{CYAN}' + c + f'{END}') #+ str(round(cap2.get(cv2.CAP_PROP_POS_FRAMES)/total_frame_count*100, 2)) + '%' + c)
             sys.stdout.flush()
             time.sleep(0.5)
         #sys.stdout.write('\rDone!     ')
@@ -530,9 +558,14 @@ while True:
     #===========================
 
 
-frame_count_change = 0
 video_milliseconds = []
 frame_axes = []
+
+
+
+frame_count_change = analysis_start_frame
+
+cap2.set(cv2.CAP_PROP_POS_FRAMES, analysis_start_frame)
 
 while True: # this analyzes the video. IMPORTANT: MINIMIZE FUNCTIONS IN THIS LOOP TO SPEED UP ANALYSIS.
 
@@ -547,7 +580,7 @@ while True: # this analyzes the video. IMPORTANT: MINIMIZE FUNCTIONS IN THIS LOO
     
     ret, video = cap2.read()
 
-    if not ret or cap2.get(cv2.CAP_PROP_POS_FRAMES) >= total_frame_count: 
+    if not ret or cap2.get(cv2.CAP_PROP_POS_FRAMES) >= total_frame_count or cap2.get(cv2.CAP_PROP_POS_FRAMES) >= analysis_end_frame: 
         done = True
         break
 
@@ -694,7 +727,7 @@ while True: # it seems that after video analysis, the data is stored in memory :
 
     min_dintensity_values = [sublist.index(min(sublist)) for sublist in intensity_difference_axes]
 
-    print('int diff ax', intensity_difference_axes, 'min', min_dintensity_values)
+    #print('int diff ax', intensity_difference_axes, 'min', min_dintensity_values)
 
     max_of_min_index = max(min_dintensity_values)
 
@@ -715,9 +748,9 @@ while True: # it seems that after video analysis, the data is stored in memory :
 
     frozen_frame = DDU.get_frame_id(frozen_frame, cap3)
 
-    print('frozen frac num', frozen_frame_number)
+    #print('frozen frac num', frozen_frame_number)
 
-    cv2.imwrite(os.path.join(directory, f'{csv_name}_All_Frozen_Circles.jpg'), frozen_frame)
+    cv2.imwrite(os.path.join(directory, f'{csv_name}_Image_of_Last_Frozen_Circle.jpg'), frozen_frame)
 
 
     end_time = time.time()

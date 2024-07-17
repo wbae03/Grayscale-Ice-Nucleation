@@ -338,6 +338,7 @@ def plot_time_and_dintensity_heatmap(dintensity_axes, video_seconds, temperature
 def get_freezing_temperature(intensity_difference_axes, video_seconds, temperature_axes, temperature_time_axes):  # global min of derivative is the largest change towards a black colour = freezing event
 
     min_intensity_all_temperatures = []
+    #print('temp time ax', temperature_time_axes)
 
     for i in range(len(intensity_difference_axes)):
 
@@ -351,6 +352,7 @@ def get_freezing_temperature(intensity_difference_axes, video_seconds, temperatu
 
         #print('temp axes2', temperature_axes, len(temperature_axes), 'temp time axes2', temperature_time_axes, len(temperature_time_axes))
         #print('min int vid time', min_intensity_video_time, 'temp time axes', temperature_time_axes)
+
         for t in range(len(temperature_time_axes)):
 
             if min_intensity_video_time >= temperature_time_axes[t] and min_intensity_video_time < temperature_time_axes[t+1]: # locating the two temperature time values that the video time value of the change in intensity lies between
@@ -378,7 +380,10 @@ def get_freezing_temperature(intensity_difference_axes, video_seconds, temperatu
             # ex: min int change given as 0 seconds in video due to false-positive circle in an area that does not go through much grayscale change, but temperature data begins recording at 1 second
             # ex 2: min int change occurs at 10 seconds, but temperature data only goes up to 5 seconds
             elif min_intensity_video_time < temperature_time_axes[0] or min_intensity_video_time > temperature_time_axes[-1]: 
-                print(f'\n\n{RED}[PROGRAM] > {END}{YELLOW}WARNING! There is an issue with the provided video and temperature data{END}. The min_intensity_video_time (time when greatest grayscale int change to darkness occurs) of a circle is either smaller or larger than the range of the temperature time data. \nPossible solutions: Add a header to the temperature data (the 1st row is ignored), or obtain a wider range of temperature data.')
+
+                #print('min int vid time', min_intensity_video_time, 'temp time ax', temperature_time_axes[0])
+
+                print(f'\n\n{RED}[PROGRAM] > {END}{YELLOW}WARNING! There is a potential issue with the provided video and temperature data{END}. The min_intensity_video_time (time when greatest grayscale int change to darkness occurs) of a circle is either smaller or larger than the range of the temperature time data in the analyzed video range.\nThis may be due to some circles not freezing at all, and having a random and greatest intensity change occuring at the very beginning or end of the analyzed video range.\n It may also be due to issues with the temperature data, in which case possible solutions include: Add a header to the temperature data (the 1st row is ignored), or obtain a wider range of temperature data.')
                 '''
                 {CYAN} Diagnostic Data {END})
                 print(f'{YELLOW}Element Length of Video Time (Varies with Chosen Frame Interval Analysis){END} ---', len(video_seconds))
