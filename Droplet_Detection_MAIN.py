@@ -83,7 +83,7 @@ def banner():
  / /_\/ '__/ _` | | | / __|/ __/ _` | |/ _ \    / /\/ __/ _ \  /  \/ / | | |/ __| |/ _ \/ _` | __| |/ _ \| '_ \ 
 / /_\\| | | (_| | |_| \__ \ (_| (_| | |  __/ /\/ /_| (_|  __/ / /\  /| |_| | (__| |  __/ (_| | |_| | (_) | | | |
 \____/|_|  \__,_|\__, |___/\___\__,_|_|\___| \____/ \___\___| \_\ \/  \__,_|\___|_|\___|\__,_|\__|_|\___/|_| |_|
-                 |___/                                                                  {BOLD}Version 1.8.0{END}                                              
+                 |___/                                                                  {BOLD}Version 1.8.1{END}                                              
 {END}
     {GREEN}> {END}William Bae | NBD Group @ UBC Chemistry     {GREEN}> {END}www.github.com/wbae03     {GREEN}> {END}LinkedIn: wbae03
 
@@ -284,10 +284,10 @@ filename = askopenfilename()
 csv_name = ntpath.basename(filename) # get base name of file directory path
 
 os.environ["USERPROFILE"]
-save_path = os.path.join(os.environ["USERPROFILE"], "Desktop")
+save_path = os.path.join(os.environ["USERPROFILE"], "Desktop", 'GIN')
 
 try:
-    os.mkdir(save_path + '/GIN/' + csv_name)
+    os.mkdir(save_path + csv_name)
 
     print(f"\n{RED}[PROGRAM] > {END}Directory '% s' created!" % csv_name)
 
@@ -295,7 +295,7 @@ except FileExistsError:
 
     print(f"\n{RED}[PROGRAM] > {END}Directory '% s' already exists! This should not be possible, given that the time used in the file name should be unique as time never stops for anyone..." % csv_name)
 
-directory = os.path.join(save_path, 'GIN', csv_name)
+directory = os.path.join(save_path, csv_name)
 
 
 cap = cv2.VideoCapture(filename)
