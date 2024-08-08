@@ -66,6 +66,12 @@ banner()
 # Proportionally change the size of image and video inputs.
 size_ratio = 0.3
 
+# Set the values for the inner and outer radius for analysis. The ROI will be the ring formed by the 2 circles. 
+# If you only want the entire area of 1 circle to be the ROI, set inner radius to 0 and outer radius to 1, I think this works.
+inner_radius_factor = 0.6
+
+outer_radius_factor = 1.4
+
 # stores calibration image
 calib_file = ''
 
@@ -287,17 +293,21 @@ except FileExistsError:
 
     print(f"\n{RED}[PROGRAM] > {END}Directory '% s' already exists!" % folder)
 
+timestr = time.strftime("%Y%m%d_%H%M%S")
+
+timestr_csv_name = f'{timestr}_{csv_name}'
+
 try:
 
-    os.mkdir(save_path + '/GIN/' + f'{csv_name}')
+    os.mkdir(save_path + '/GIN/' + f'{timestr_csv_name}')
 
-    print(f"\n{RED}[PROGRAM] > {END}Directory '% s' created!" % csv_name)
+    print(f"\n{RED}[PROGRAM] > {END}Directory '% s' created!" % timestr_csv_name)
 
 except FileExistsError:
 
-    print(f"\n{RED}[PROGRAM] > {END}Directory '% s' already exists!" % csv_name)
+    print(f"\n{RED}[PROGRAM] > {END}Directory '% s' already exists!" % timestr_csv_name)
 
-directory = os.path.join(save_path, 'GIN', csv_name)
+directory = os.path.join(save_path, 'GIN', timestr_csv_name)
 
 # prepare different cap 
 cap = cv2.VideoCapture(filename)
@@ -415,14 +425,14 @@ while True:
                 
                 frame_copy = frame.copy()
 
-                circles, user_circle_detection_ready_input = DDF.frame_circles(frame_copy, n)
+                circles, user_circle_detection_ready_input = DDF.frame_circles(frame_copy, n, inner_radius_factor, outer_radius_factor)
 
                 # condition if circles are detected
                 if circles is not None:
 
                     areas_sorted = DDF.frame_overlay_sort(circles)
 
-                    DDF.frame_overlay_label(areas_sorted, frame_copy, calibration_ratio)
+                    DDF.frame_overlay_label(areas_sorted, frame_copy, cap, calibration_ratio)
 
                     cv2.namedWindow(n)
 
@@ -432,7 +442,7 @@ while True:
 
                     DDU.show_window(n, frame_copy, size_ratio, cap, filename)
 
-                    cv2.imwrite(os.path.join(directory, f'{csv_name}_Image_of_Detected_Circles.jpg'), frame_copy)
+                    cv2.imwrite(os.path.join(directory, f'Image_01_[Detected_Circles]_{csv_name}.png'), frame_copy)
             
                     if user_circle_detection_ready_input == True:
 
@@ -478,7 +488,7 @@ while True:
 
         selection_list = DDS.make_selection_list(areas_sorted, deselection_input_list, selection_frame)
 
-        selection_frame, calib_r_list = DDS.selected_circles_on_frame_and_label(selection_list, selection_frame, calibration_ratio)
+        selection_frame, calib_r_list = DDS.selected_circles_on_frame_and_label(selection_list, selection_frame, cap1, inner_radius_factor, outer_radius_factor, calibration_ratio)
 
         m = 'WINDOW 2 /// SELECTED CIRCLES FOR ANALYSIS'
 
@@ -490,7 +500,7 @@ while True:
 
         DDU.show_window(m, selection_frame, size_ratio, cap1, filename)
 
-        cv2.imwrite(os.path.join(directory, f'{csv_name}_Image_of_Selected_Circles.jpg'), selection_frame)
+        cv2.imwrite(os.path.join(directory, f'Image_02_[Selected_Circles]_{csv_name}.png'), selection_frame)
 
     if stop_reiterating == True:
 
@@ -572,6 +582,7 @@ while True:
 
     ret, video = cap2.read()
 
+    # ensures video analysis does not exceed the total frame count (and get permanently stuck looping) or the custom end frame.
     if not ret or cap2.get(cv2.CAP_PROP_POS_FRAMES) >= total_frame_count or cap2.get(cv2.CAP_PROP_POS_FRAMES) >= analysis_end_frame: 
         
         done = True
@@ -582,7 +593,7 @@ while True:
     frame_intensity_sum_hold = []
 
     # grayscale to remove colour noise
-    video = cv2.cvtColor(video, cv2.COLOR_BGR2GRAY)
+    video_gray = cv2.cvtColor(video, cv2.COLOR_BGR2GRAY)
 
     if selection_list is not None:
         
@@ -590,32 +601,51 @@ while True:
 
             x, y, r = selection_list[i][0], selection_list[i][1], selection_list[i][2]
 
-            roi = np.zeros(video.shape[:2], np.uint8)
+            # RING
+            inner_radius = int(round(r * inner_radius_factor, 0))
 
-            roi = cv2.circle(roi, (x, y), r, 255, cv2.FILLED)
+            outer_radius = int(round(r * outer_radius_factor, 0))
+
+            # Create an all-black canvas
+            #roi = np.zeros(video_gray.shape[:2], np.uint8)
+            outer_mask = np.zeros(video_gray.shape[:2], np.uint8)
+
+            inner_mask = np.zeros(video_gray.shape[:2], np.uint8)
+
+            # Draw the outer and inner circles on top of the black canvas
+            #roi = cv2.circle(roi, (x, y), r, 255, cv2.FILLED)
+            cv2.circle(outer_mask, (x, y), outer_radius, 255, cv2.FILLED)
+
+            cv2.circle(inner_mask, (x, y), inner_radius, 255, cv2.FILLED)
             
-            # Target image; white background
-            mask = np.ones_like(video) * 255
+            # Create ring-shaped mask by subtracting the inner circle from the outer circle
+            ring_mask = cv2.subtract(outer_mask, inner_mask)
+            #mask = np.ones_like(video_gray) * 255
 
-            # Copy ROI from original image to target blank canvas
-            mask = cv2.bitwise_and(mask, video, mask=roi) + cv2.bitwise_and(mask, mask, mask=~roi)
+            # Apply the ring-shaped mask to the grayscale frame
+            masked_frame = cv2.bitwise_and(video_gray, video_gray, mask=ring_mask)
+            #mask = cv2.bitwise_and(mask, video_gray, mask=roi) + cv2.bitwise_and(mask, mask, mask=~roi)
 
-            roi_analyze = mask[y-r: y+r, x-r: x+r]
+            # Define the region of interest (ROI) for analysis
+            roi_analyze = masked_frame[y-r: y+r, x-r: x+r]
 
-            # note to self: both these lines produce similar valuse, but cv.countNonZero better since it sprob more accurate.
-            non_zero_pixels = cv2.countNonZero(roi)
+            # note to self: both these lines produce similar values, but cv.countNonZero better since it sprob more accurate.
+            #non_zero_pixels = cv2.countNonZero(roi)
             # print('non zero pixs:', non_zero_pixels)
             # print('p r 2: ', math.pi * r**2)
 
+            # Compute the sum of pixel values in the ROI
             sum1 = [sum(i) for i in zip(*roi_analyze)]
 
             sum2 = sum(sum1)
 
+            # Calculate the sum normalized to the square area that encloses the circular mask.
             # 4*r^2 is the square-shaped area of analysis (2 radii wide, 2 radii high, hence 2 * r * 2 * r)
             frame_intensity_sum = sum2/(2*r*2*r)
 
+            # Adds the individual circle analyzed to a list.
             frame_intensity_sum_hold.append(int(frame_intensity_sum))
-        
+
         video_millisecond_position = cap2.get(cv2.CAP_PROP_POS_MSEC)
 
         video_milliseconds.append(video_millisecond_position)
@@ -647,7 +677,7 @@ while True:
 
     intensity_difference_axes = DDG.get_intensity_difference_axes(intensity_axes)
 
-    # Save jpg of frame when very last droplet freezes (the very last maximal change in intensity across all circles)
+    # Save png of frame when very last droplet freezes (the very last maximal change in intensity across all circles)
 
     # get the entire list except for the last element, because you must match the amount of elements in frame axis to agree with difference axis
     # get entire list except for the last element (must match amount of elements in frame axis to agree with difference axis)
@@ -672,11 +702,11 @@ while True:
 
     if not ret: break
 
-    frozen_frame, calib_r_list = DDS.selected_circles_on_frame_and_label(selection_list, frozen_frame, calibration_ratio)
+    frozen_frame, calib_r_list = DDS.selected_circles_on_frame_and_label(selection_list, frozen_frame, cap1, inner_radius_factor, outer_radius_factor, calibration_ratio)
 
     frozen_frame = DDU.get_frame_id(frozen_frame, cap3)
 
-    cv2.imwrite(os.path.join(directory, f'{csv_name}_Image_of_Last_Frozen_Circle.jpg'), frozen_frame)
+    cv2.imwrite(os.path.join(directory, f'Image_03_[Fully_Frozen]_{csv_name}.png'), frozen_frame)
 
     end_time = time.time()
 
@@ -863,11 +893,12 @@ if use_temperature_file == True:
 
     #temperature = [float(x) for x in temperature] # convert list of strings to list of integers
 
-
-
     temperature_axes, temperature_time_axes = DDG.get_temperature_axes(video_seconds, temperature_time, temperature)
+
     modified_temperature_axes = DDG.get_correct_temperature_axes(intensity_axes, temperature_axes)
+
     intensity_axes_for_temperature = DDG.get_correct_intensity_axes(intensity_axes, modified_temperature_axes)
+    
     #DDG.plot_intensity_vs_temperature(intensity_axes_for_temperature, modified_temperature_axes, axis)
 
     DDG.plot_time_and_dintensity_heatmap(intensity_difference_axes, video_seconds, modified_temperature_axes, temperature_time_axes, axis)
@@ -876,10 +907,8 @@ if use_temperature_file == True:
 
     #print('min int all temp', min_intensity_all_temperatures, 'calib r list', calib_r_list)
 
-
-
     # IF I WANT BOXPLOTS USE THE CODE BELOW 
-    # ------
+
     '''
     bin_data_list, bin_edges, label_names = DDG.get_boxplot_data_by_radii(calib_r_list, min_intensity_all_temperatures)
 
@@ -901,7 +930,7 @@ if use_temperature_file == True:
     export_radii_freezing.to_csv(os.path.join(directory, f'{csv_name}_radii_freezing_(CSV_INPUT).csv')) # use os.path.join() to properly concatenate paths and filenames.
 
     '''
-    # --------
+
     # OTHERWISE USE RADII VS TEMP PLOT
     
     calib_r_list_sorted, min_intensity_all_temperatures_sorted = DDG.plot_radii_vs_temperatures(calib_r_list, min_intensity_all_temperatures, axis)
@@ -917,10 +946,9 @@ if use_temperature_ramp == True:
 
     ramp_temperatures = []
 
-
-
-    int_video_seconds = [round(x,0) for x in video_seconds] # round values to be integers. +1 so ramp_temperatures has extra temp value to prevent error
-
+    int_video_seconds = [round(x,0) for x in video_seconds] 
+    
+    # round values to be integers. +1 so ramp_temperatures has extra temp value to prevent error
     int_video_seconds.append(int_video_seconds[-1] + (int_video_seconds[-1] - int_video_seconds[-2]))
     
     for i in int_video_seconds:
@@ -929,20 +957,17 @@ if use_temperature_ramp == True:
 
     ramp_time = int_video_seconds
 
-    #for i in ramp_temperatures:
-
-    #    ramp_time.append((i - ramp_temperatures[0]) / ramp) # subtract from target_temperatures[0] to get 0 seconds at the initial temperature
-
-
-    # sort through this!
+    # Ensures the duration and temperature lists are of the same length(?)
     temperature_axes, temperature_time_axes = DDG.get_temperature_axes(video_seconds, ramp_time, ramp_temperatures)
+    
+    # if the video ran longer than the temperature probe...
     modified_temperature_axes = DDG.get_correct_temperature_axes(intensity_axes, temperature_axes)
+
     intensity_axes_for_temperature = DDG.get_correct_intensity_axes(intensity_axes, modified_temperature_axes)
 
     DDG.plot_time_and_dintensity_heatmap(intensity_difference_axes, video_seconds, modified_temperature_axes, temperature_time_axes, axis)
 
     min_intensity_all_temperatures = DDG.get_freezing_temperature(intensity_difference_axes, video_seconds, temperature_axes, temperature_time_axes)
-
 
     '''
     bin_data_list, bin_edges, label_names = DDG.get_boxplot_data_by_radii(calib_r_list, min_intensity_all_temperatures)
@@ -972,8 +997,6 @@ if use_temperature_ramp == True:
 
     export_radii_freezing.to_csv(os.path.join(directory, f'{csv_name}_radii_freezing_(CSV_INPUT).csv')) # use os.path.join() to properly concatenate paths and filenames.
 
-
-
 d = {'Frame Time (seconds)': video_seconds, 'Frames Axes': frame_axes}
 
 export_intensity_differences = pd.DataFrame(d)
@@ -984,7 +1007,35 @@ for i in range(len(intensity_axes)):
 
 export_intensity_differences.to_csv(os.path.join(directory, f'{csv_name}_intensity_change.csv'))
 
-fig1.savefig(os.path.join(directory, f'{csv_name}_Intensity_Plots.png'))
+ax_int_vs_sec = axis[0,0]
+
+ax_dint_vs_sec = axis[1,0]
+
+ax_heatmap = axis[0,1]
+
+ax_radii_vs_temp = axis[1,1]
+
+# Save just the portion _inside_ the axis' boundaries
+ax_int_vs_sec_extent = ax_int_vs_sec.get_window_extent().transformed(fig1.dpi_scale_trans.inverted())
+
+ax_dint_vs_sec_extent = ax_dint_vs_sec.get_window_extent().transformed(fig1.dpi_scale_trans.inverted())
+
+ax_heatmap_extent = ax_heatmap.get_window_extent().transformed(fig1.dpi_scale_trans.inverted())
+
+ax_radii_vs_temp_extent = ax_radii_vs_temp.get_window_extent().transformed(fig1.dpi_scale_trans.inverted())
+
+# Save the full figure
+fig1.savefig(os.path.join(directory, f'Figure_01_[All_Plots]_{csv_name}.png'))
+
+# Saves the individual figures
+# Note: .expanded: Pads the saved area by 20% in the x-direction and 23% in the y-direction... (x-direction, y-direction)
+fig1.savefig(os.path.join(directory, f'Figure_02_[Intensity_vs_Seconds]_{csv_name}.png'), bbox_inches=ax_int_vs_sec_extent.expanded(1.2, 1.21))
+
+fig1.savefig(os.path.join(directory, f'Figure_03_[Intensity_Change_vs_Seconds]_{csv_name}.png'), bbox_inches=ax_dint_vs_sec_extent.expanded(1.2, 1.21))
+
+fig1.savefig(os.path.join(directory, f'Figure_04_[Heatmap]_{csv_name}.png'), bbox_inches=ax_heatmap_extent.expanded(1.4, 1.3))
+
+fig1.savefig(os.path.join(directory, f'Figure_05_[Radius_vs_Freezing_Temperature]_{csv_name}.png'), bbox_inches=ax_radii_vs_temp_extent.expanded(1.2, 1.21))
 
 end_banner = f'''\n
 {CYAN}
@@ -997,7 +1048,6 @@ end_banner = f'''\n
                    END OF PROGRAM! 
 {END}
 '''
-
 
 x, y = DDG.get_frozen_fraction_data(min_intensity_all_temperatures)
 
@@ -1014,7 +1064,7 @@ axis2.tick_params(axis='y', labelsize=18)
 axis2.set_xlabel('Temperature (ºC)', fontsize=18)
 axis2.set_ylabel(f'Frozen Fraction (n={len(min_intensity_all_temperatures)})', fontsize=18)
 
-fig2.savefig(os.path.join(directory, f'{csv_name}_Frozen_Fraction.png'))
+fig2.savefig(os.path.join(directory, f'Figure_06_[Frozen_Fraction]_{csv_name}.png'))
 
 
 z = {'Frozen Fraction)': y, 'Freezing Temperature (ºC)': x}

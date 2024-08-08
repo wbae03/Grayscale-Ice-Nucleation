@@ -22,10 +22,9 @@ last_stored_sens_selection = 0
 def frame_capture(i: int, cap):
     cap.set(cv2.CAP_PROP_POS_FRAMES, i)
 
-def frame_circles(frame, n):
-    global first_pass, last_stored_sens_selection
+def frame_circles(frame, n, inner_radius_factor, outer_radius_factor):
 
-  
+    global first_pass, last_stored_sens_selection
 
     grayFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # grayscale to remove color noise
     blurFrame = cv2.GaussianBlur(grayFrame, (17, 17), 0) # blur to lower background noise. 2nd p: both values must be odd. Higher = more blur. Default: 17,17
@@ -203,15 +202,27 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
             left = i[1] - i[2]
             right = i[1] + i[2]
 
+            # Set the values for the inner and outer radius for analysis. The ROI will be the ring formed by the 2 circles. 
+            inner_radius = int(round(i[2] * inner_radius_factor, 0))
+
+            outer_radius = int(round(i[2] * outer_radius_factor, 0))
+
             # when an out of bounds circle is generated, usually because the radius ends up generating a circle out of the screen, an overflow occurs in the scalar subtraction
             # This results in a really big positive number. 
             # Thus, screen detected circles for absurd radii
 
             if above < 20000 and below < 20000 and left < 20000 and right < 20000:
-                #x, y, r = i[0], i[1], i[2]
-                #print('i circles i: ', i)
-                cv2.circle(frame, (i[0], i[1]), i[2], (0,0,255), 6) # circumference
-                cv2.circle(frame, (i[0], i[1]), 1, (0,0,255), 2) # center point
+
+                # Detected Circle
+                cv2.circle(frame, (i[0], i[1]), i[2], (255,0,29), 6) # circumference
+
+                cv2.circle(frame, (i[0], i[1]), 1, (255,0,29), 2) # center point
+
+                # RINGs
+                cv2.circle(frame, (i[0], i[1]), inner_radius, (107,0,178), 6) # inner ring
+
+                cv2.circle(frame, (i[0], i[1]), outer_radius, (152,0,255), 2) # outer ring
+
             else:
             
                 print(f'\n {RED}[PROGRAM] > {END}(Above RuntimeWarning explanation) Detected an out-of-bounds circle (y-pos: ', i[0], 'x-pos: ', i[1], 'pixel radius: ', i[2],f'). {YELLOW}Deselecting the circle...{END}')
@@ -256,35 +267,55 @@ def frame_overlay_sort(circles):
 
     return areas_sorted
 
-def frame_overlay_label(areas_sorted: list, frame, calibration_ratio):
-     
-     for i in range(len(areas_sorted)):
-          
-        font = cv2.FONT_HERSHEY_COMPLEX
+def frame_overlay_label(areas_sorted: list, frame, cap, calibration_ratio):
+
+    half_width = int(cap.get(3)) / 2
+    
+    #half_height = int(cap.get(4)) / 2
+
+    font = cv2.FONT_HERSHEY_PLAIN
+
+    for i in range(len(areas_sorted)):
           
         x = areas_sorted[i][0]
 
         y = areas_sorted[i][1]
 
+        r = round(areas_sorted[i][2], 0)
+
         circle_number = i+1
 
-        areas_sorted[i].append(circle_number) # by this point, each circle has 5 associated properties in this order: [xpos, ypos, radius, xy area, circle # ranked by area]
+        # by this point, each circle has 5 associated properties in this order: [xpos, ypos, radius, xy area, circle # ranked by area]
+        areas_sorted[i].append(circle_number)
 
-        frame = cv2.putText(frame, '#' + str(i+1), (x-70, y+10), font, 1.5, (0, 0, 0), 10, cv2.LINE_AA) # text outline
+        if x <= half_width:
 
-        frame = cv2.putText(frame, '#' + str(i+1), (x-70, y+10), font, 1.5, (0, 255, 100), 2, cv2.LINE_AA) # i+1 so the first circle isnt labelled as '0'
+            frame = cv2.line(frame, (x,y), (x+r, y), (0, 0, 0), 10, cv2.LINE_AA)
 
-        # radius label
-        r = areas_sorted[i][2] # radius in pixels
+            frame = cv2.putText(frame, '#' + str(i+1), (x+r, y+20), font, 4, (0, 204, 255), 20, cv2.LINE_AA) # text outline
 
-        calib_r = round(float(r) / float(calibration_ratio), 2) # radius in micrometer length
+            frame = cv2.putText(frame, '#' + str(i+1), (x+r, y+20), font, 4, (0, 0, 255), 4, cv2.LINE_AA) # i+1 so the first circle isnt labelled as '0'
 
-        frame = cv2.line(frame, (x,y), (x+r, y), (0,0,255), 6)
+        if x > half_width:
 
-        frame = cv2.putText(frame, 'r=' + str(calib_r), (x+5, y-15), font, 1, (0, 0, 0), 8, cv2.LINE_AA) # text outline
-        frame = cv2.putText(frame, 'r=' + str(calib_r), (x+5, y-15), font, 1, (0, 255, 100), 2, cv2.LINE_AA)
+            frame = cv2.line(frame, (x,y), (x-r-15, y), (0, 0, 0), 10, cv2.LINE_AA)
 
-        # circumference, as a measure of curvature (its an opened and straightened out arc length). C = 2pir
+            frame = cv2.putText(frame, '#' + str(i+1), (x-r-120, y+20), font, 4, (0, 204, 255), 20, cv2.LINE_AA) # text outline
+
+            frame = cv2.putText(frame, '#' + str(i+1), (x-r-120, y+20), font, 4, (0, 0, 255), 4, cv2.LINE_AA) # i+1 so the first circle isnt labelled as '0'
+
+        # Radius Label
+        #r = areas_sorted[i][2] # radius in pixels
+
+        #calib_r = round(float(r) / float(calibration_ratio), 2) # radius in micrometer length
+
+        #frame = cv2.line(frame, (x,y), (x+r, y), (0,0,255), 6)
+
+        #frame = cv2.putText(frame, 'r=' + str(calib_r), (x+5, y-15), font, 1, (0, 0, 0), 8, cv2.LINE_AA) # text outline
+
+        #frame = cv2.putText(frame, 'r=' + str(calib_r), (x+5, y-15), font, 1, (0, 255, 100), 2, cv2.LINE_AA)
+
+        # Circumference, as a measure of curvature (its an opened and straightened out arc length). C = 2pir
 
         #circumference = round(2 * math.pi * calib_r, 2)
 

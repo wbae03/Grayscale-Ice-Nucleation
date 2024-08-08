@@ -174,28 +174,18 @@ def plot_dintensity_vs_seconds(intensity_difference_axes, video_seconds, axis): 
 def get_temperature_axes(video_seconds, temperature_time, temperature):
 
     temperature_axes = []
+
     temperature_time_axes = []
 
-    #print('vid secs', video_seconds, 'temp time', temperature_time)
-
-
-    int_video_seconds = [round(x,0) for x in video_seconds] # round values to be integers.
+    # round values to be integers
+    int_video_seconds = [round(x,0) for x in video_seconds]
 
     for i in range(len(int_video_seconds)):
-        
-        #print('temp df index', temperature_df[2][i], 'video secs', video_seconds)
-        '''
-        if temperature_time[i] in int_video_seconds:
-
-            temperature_axes.append(float(temperature[i])) # add the corresponding temperature data to the axes to be plotted
-            temperature_time_axes.append(float(temperature_time[i]))
-            #print('temp this', temperature[i], 'temp time this', temperature_time[i], 'vid time this', video_seconds)
-
-        '''
 
         for t in range(len(temperature_time)):
 
-            try: # try takes care for if one of the lists (temperature time, or int vid secs, is longer than the other and thus lacks t+1)
+            # try takes care for if one of the lists (temperature time, or int vid secs, is longer than the other and thus lacks t+1)
+            try: 
 
                 if int_video_seconds[i] >= temperature_time[t] and int_video_seconds[i] < temperature_time[t+1]: # locating the two temperature time values that the video time value of the change in intensity lies between
 
@@ -222,14 +212,10 @@ def get_temperature_axes(video_seconds, temperature_time, temperature):
 
 def get_correct_temperature_axes(intensity_axes, temperature_axes):
 
-    if len(intensity_axes[0]) < len(temperature_axes): # if the video ran longer than the temperature probe...
-
-
-        #print('int axes smaller than temp axes!!:', intensity_axes[0], 'adfssadf', temperature_axes)
+    # if the video ran longer than the temperature probe...
+    if len(intensity_axes[0]) < len(temperature_axes): 
+        
         temperature_axes = temperature_axes[0 : len(intensity_axes[0])]
-
-
-    #print('numb 1', temperature_axes)
 
     return temperature_axes
 
@@ -289,48 +275,52 @@ def plot_intensity_vs_temperature(intensity_axes_for_temperature, modified_tempe
 
 #im so dumb. literally, just convert the video_seconds axis to a temperature axes.... 
 '''
-def plot_time_and_dintensity_heatmap(dintensity_axes, video_seconds, temperature_axes, temperature_time_axes, axis):
+def plot_time_and_dintensity_heatmap(dintensity_axes, video_seconds, modified_temperature_axes, temperature_time_axes, axis):
 
     ax = axis[0,1]
+
     # Create heatmap using imshow
     heatmap = ax.imshow(dintensity_axes, cmap='jet', aspect='auto', interpolation='none')
     
     # Add colorbar to the heatmap
     cbar = plt.colorbar(heatmap, ax=ax)
+
     cbar.set_label('Grayscale Intensity Difference')
     
     # Generate labels for y-ticks
-    circle_label = ['Circle ' + str(i+1) for i in range(len(dintensity_axes))]
+    circle_label = ['Circle #' + str(i+1) for i in range(len(dintensity_axes))]
     
     # Set y-ticks and labels
     ax.set_yticks(range(len(dintensity_axes)))
+
     ax.set_yticklabels(circle_label, fontsize=10)
-    
-    # Set x-ticks to every 10 units and labels
-    #axis[0, 2].xaxis.set_major_locator(MultipleLocator(10))
-    rounded_video_seconds = [round(x, 2) for x in video_seconds]
-    ax.set_xticks(range(0, len(rounded_video_seconds), 10))  # Ensure ticks every 50 units
-    ax.set_xticklabels(rounded_video_seconds[::10], fontsize=7, rotation=45, ha='right')
+
+    # Set the step count for the x-axes:
+    step = max(len(temperature_time_axes) // 20, 1)
+
+    ax.set_xticks(temperature_time_axes[::step])
+
+    ax.set_xticklabels([round(temperature_time_axes[i], 1) for i in range(0, len(temperature_time_axes), step)], fontsize=7, rotation=45, ha='right')
+
+    #ax.set_xticklabels(rounded_video_seconds[::10], fontsize=7, rotation=45, ha='right')
     # the resulting ticks will be the time of analysis * the step interval defined above
 
     # Set titles and labels
     ax.set_title('')
+
     ax.set_xlabel('Analyzed Time Points (seconds)')
+
     ax.set_ylabel('Circles')
 
-    # create a second x-axis above the plot using the twin function which creates an x axis with the same y axis
+    # create a second x-axis (for temperature) above the plot using the twin function which creates an x axis with the same y axis
     ax2 = axis[0,1].twiny()
 
-    # customizable values
+    ax2.set_xlim(ax.get_xlim())
 
-    temp_interval = 3
+    ax2.set_xticks(temperature_time_axes[::step])
 
-    # IF TEMPERATURE DATA EXCEEDS LENGTH OF VIDEO THIS WILL ALLOW GRAPHING:
-    #print('before manip,', len(temperature_axes), 'vid secs', len(video_seconds))
-    #temperature = temperature[:len(video_seconds)] # get all elements before the length of elements in video secs
-    ax2.set_xticks(temperature_time_axes[::temp_interval]) # only use every 20th element
-    #print('hffjfgghkghg temp lngth', len(temperature_axes))
-    ax2.set_xticklabels(temperature_axes[::temp_interval], fontsize=10, rotation=45, ha='left')
+    ax2.set_xticklabels([round(modified_temperature_axes[i], 1) for i in range(0, len(modified_temperature_axes), step)], fontsize=7, rotation=45, ha='left')
+
     ax2.set_xlabel('Temperature (C)', fontsize=12) 
 
     return
