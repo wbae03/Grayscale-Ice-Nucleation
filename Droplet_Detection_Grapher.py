@@ -279,8 +279,8 @@ def plot_time_and_dintensity_heatmap(dintensity_axes, video_seconds, modified_te
 
     ax = axis[0,1]
 
-    # Create heatmap using imshow
-    heatmap = ax.imshow(dintensity_axes, cmap='jet', aspect='auto', interpolation='none')
+    # Create heatmap using imshow, with extent setting to match the actual range of the time axes to be aligned with the heatmap data
+    heatmap = ax.imshow(dintensity_axes, cmap='jet', aspect='auto', interpolation='none', extent=[temperature_time_axes[0], temperature_time_axes[-1], 0, len(dintensity_axes)])
     
     # Add colorbar to the heatmap
     cbar = plt.colorbar(heatmap, ax=ax)
@@ -297,6 +297,8 @@ def plot_time_and_dintensity_heatmap(dintensity_axes, video_seconds, modified_te
 
     # Set the step count for the x-axes:
     step = max(len(temperature_time_axes) // 20, 1)
+
+    #ax.set_xlim(temperature_time_axes[0], temperature_time_axes[-1])
 
     ax.set_xticks(temperature_time_axes[::step])
 

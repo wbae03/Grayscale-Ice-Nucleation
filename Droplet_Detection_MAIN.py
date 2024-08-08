@@ -387,9 +387,10 @@ while True:
 
                 if isinstance(int(analysis_end_time), int):
 
-                    analysis_end_time = float(analysis_end_time)
+                    # add 1 to the analysis end time, so the heat map actually places a tick for the last number. Otherwise, it will leave it out. Ex: if the input end time is 30 sec, the heatmap will have 29 as the last tick without +1
+                    analysis_end_time = float(analysis_end_time) + 1
 
-                    print(f'\n{RED}[PROGRAM] > {END}The analysis will end when the video is at {YELLOW}[', analysis_end_time,f'] seconds{END}.')
+                    print(f'\n{RED}[PROGRAM] > {END}The analysis will end when the video is at {YELLOW}[{analysis_end_time - 1}] seconds{END}.')
 
             except:
 
