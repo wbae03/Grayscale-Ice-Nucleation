@@ -22,18 +22,16 @@ last_stored_sens_selection = 0
 def frame_capture(i: int, cap):
     cap.set(cv2.CAP_PROP_POS_FRAMES, i)
 
-def frame_circles(frame, n, inner_radius_factor, outer_radius_factor):
+def frame_circles(frame, n, inner_radius_factor, outer_radius_factor, hough1, hough2, hough3, hough4, hough5, hough6, hough7):
 
     global first_pass, last_stored_sens_selection
 
     grayFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # grayscale to remove color noise
+
     blurFrame = cv2.GaussianBlur(grayFrame, (17, 17), 0) # blur to lower background noise. 2nd p: both values must be odd. Higher = more blur. Default: 17,17
-    #value, thresh = cv2.threshold(blurFrame, 200, 255, cv2.THRESH_BINARY_INV) # pixels below 130 become 0, above become 255 (white)
 
     sens_selection_ready = False
 
-    
-    
     user_circle_detection_ready_input = False # to be returned to decide if main loop continues or terminates
 
     while sens_selection_ready == False:
@@ -69,8 +67,6 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
 
                     else: 
                         first_pass = True
-
-
         
         except:
 
@@ -91,12 +87,12 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
 
         circles = cv2.HoughCircles(blurFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                                 cv2.HOUGH_GRADIENT, 
-                                1.1, # influences whether nearby circles will be merged
-                                30, # min distance between two circles' centers
-                                param1=42, # sensitivity of circle detection; High = wont find much circles. Default: 42
-                                param2=75, # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles. Default: 75
-                                minRadius=5, # min radius of circles
-                                maxRadius=400)  # max radius of circles # note to self: the radii parameters are quite important in selecting correct circles!!
+                                hough1[0], # influences whether nearby circles will be merged
+                                hough1[1], # min distance between two circles' centers
+                                param1=hough1[2], # sensitivity of circle detection; High = wont find much circles. Default: 42
+                                param2=hough1[3], # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles. Default: 75
+                                minRadius=hough1[4], # min radius of circles
+                                maxRadius=hough1[5])  # max radius of circles # note to self: the radii parameters are quite important in selecting correct circles!!
         
         print(f'\n{RED}[PROGRAM] > {END}Detection parameters {YELLOW}(1){END} used by the program.')
 
@@ -105,12 +101,12 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
 
         circles = cv2.HoughCircles(blurFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                                 cv2.HOUGH_GRADIENT, 
-                                1.1, # influences whether nearby circles will be merged
-                                30, # min distance between two circles' centers
-                                param1=30, # sensitivity of circle detection; High = wont find much circles. Default: 42
-                                param2=50, # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles. Default: 75
-                                minRadius=5, # min radius of circles
-                                maxRadius=400)  # max radius of circles # note to self: the radii parameters are quite important in selecting correct circles!!
+                                hough2[0], # influences whether nearby circles will be merged
+                                hough2[1], # min distance between two circles' centers
+                                param1=hough2[2], # sensitivity of circle detection; High = wont find much circles. Default: 42
+                                param2=hough2[3], # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles. Default: 75
+                                minRadius=hough2[4], # min radius of circles
+                                maxRadius=hough2[5])  # max radius of circles # note to self: the radii parameters are quite important in selecting correct circles!!
         
         print(f'\n{RED}[PROGRAM] > {END}Detection parameters {YELLOW}(2){END} used by the program.')
 
@@ -120,12 +116,12 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
             
         circles = cv2.HoughCircles(blurFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                                 cv2.HOUGH_GRADIENT, 
-                                1.1, # influences whether nearby circles will be merged
-                                300, # min distance between two circles
-                                param1=20, # sensitivity of circle detection; High = wont find much circles
-                                param2=40, # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles
-                                minRadius=5, # min radius of circles
-                                maxRadius=400)  # max radius of circles 
+                                hough3[0], # influences whether nearby circles will be merged
+                                hough3[1], # min distance between two circles' centers
+                                param1=hough3[2], # sensitivity of circle detection; High = wont find much circles. Default: 42
+                                param2=hough3[3], # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles. Default: 75
+                                minRadius=hough3[4], # min radius of circles
+                                maxRadius=hough3[5])  # max radius of circles # note to self: the radii parameters are quite important in selecting correct circles!!
         
         print(f'\n{RED}[PROGRAM] > {END}Detection parameters {YELLOW}(3){END} used by the program.')
 
@@ -134,12 +130,12 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
 
         circles = cv2.HoughCircles(blurFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                                 cv2.HOUGH_GRADIENT, 
-                                1.1, # influences whether nearby circles will be merged
-                                50, # min distance between two circles
-                                param1=15, # sensitivity of circle detection; High = wont find much circles
-                                param2=40, # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles
-                                minRadius=5, # min radius of circles
-                                maxRadius=400)  # max radius of circles 
+                                hough4[0], # influences whether nearby circles will be merged
+                                hough4[1], # min distance between two circles' centers
+                                param1=hough4[2], # sensitivity of circle detection; High = wont find much circles. Default: 42
+                                param2=hough4[3], # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles. Default: 75
+                                minRadius=hough4[4], # min radius of circles
+                                maxRadius=hough4[5])  # max radius of circles # note to self: the radii parameters are quite important in selecting correct circles!!
         
         print(f'\n{RED}[PROGRAM] > {END}Detection parameters {YELLOW}(4){END} used by the program.')
 
@@ -148,12 +144,12 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
 
         circles = cv2.HoughCircles(blurFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                                 cv2.HOUGH_GRADIENT, 
-                                1.1, # influences whether nearby circles will be merged
-                                70, # min distance between two circles
-                                param1=10, # sensitivity of circle detection; High = wont find much circles
-                                param2=40, # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles
-                                minRadius=5, # min radius of circles
-                                maxRadius=150)  # max radius of circles    
+                                hough5[0], # influences whether nearby circles will be merged
+                                hough5[1], # min distance between two circles' centers
+                                param1=hough5[2], # sensitivity of circle detection; High = wont find much circles. Default: 42
+                                param2=hough5[3], # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles. Default: 75
+                                minRadius=hough5[4], # min radius of circles
+                                maxRadius=hough5[5])  # max radius of circles # note to self: the radii parameters are quite important in selecting correct circles!!
         
         print(f'\n{RED}[PROGRAM] > {END}Detection parameters {YELLOW}(5){END} used by the program.')    
                 
@@ -161,12 +157,12 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
 
         circles = cv2.HoughCircles(blurFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                                 cv2.HOUGH_GRADIENT, 
-                                1.1, # influences whether nearby circles will be merged
-                                70, # min distance between two circles
-                                param1=9, # sensitivity of circle detection; High = wont find much circles
-                                param2=35, # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles
-                                minRadius=5, # min radius of circles
-                                maxRadius=150)  # max radius of circles     
+                                hough6[0], # influences whether nearby circles will be merged
+                                hough6[1], # min distance between two circles' centers
+                                param1=hough6[2], # sensitivity of circle detection; High = wont find much circles. Default: 42
+                                param2=hough6[3], # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles. Default: 75
+                                minRadius=hough6[4], # min radius of circles
+                                maxRadius=hough6[5])  # max radius of circles # note to self: the radii parameters are quite important in selecting correct circles!!
         
         print(f'\n{RED}[PROGRAM] > {END}Detection parameters {YELLOW}(6){END} used by the program.') 
 
@@ -174,12 +170,12 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
 
         circles = cv2.HoughCircles(blurFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                                 cv2.HOUGH_GRADIENT, 
-                                1.1, # influences whether nearby circles will be merged
-                                70, # min distance between two circles
-                                param1=9, # sensitivity of circle detection; High = wont find much circles
-                                param2=30, # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles
-                                minRadius=5, # min radius of circles
-                                maxRadius=150)  # max radius of circles   
+                                hough7[0], # influences whether nearby circles will be merged
+                                hough7[1], # min distance between two circles' centers
+                                param1=hough7[2], # sensitivity of circle detection; High = wont find much circles. Default: 42
+                                param2=hough7[3], # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles. Default: 75
+                                minRadius=hough7[4], # min radius of circles
+                                maxRadius=hough7[5])  # max radius of circles # note to self: the radii parameters are quite important in selecting correct circles!!
         
         print(f'\n{RED}[PROGRAM] > {END}Detection parameters {YELLOW}(7){END} used by the program.') 
 

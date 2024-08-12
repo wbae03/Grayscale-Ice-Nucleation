@@ -7,11 +7,11 @@
 
  To install: 
  - Pull the dist folder which contains the available versions for download. The .exe file is not a standalone file; it relies on _internal.
+ - Create a 'GIN' folder on the desktop. Drag and drop the '_GIN_Properties.txt' file into it. Analyzed data will be saved here.
 
  How to use: 
  - Upon launching the .exe, the program will be a black console screen as it boots up. Subsequent usage may be done using the provided instructions within the program.
+ - The circle detection parameters can be altered using the '_GIN_Properties.txt' file.
 
  Known issues:
- - Animated snowflake in loading screen does not properly render in Win10
- - Infinite loading screen when analyzing very short videos (single digit seconds)
- - Weirdly, able to process gifs and images when submitting as a 'video' file... negative 'video' properties will occur but analysis will work...
+ - loading screen % decreases sometimes...

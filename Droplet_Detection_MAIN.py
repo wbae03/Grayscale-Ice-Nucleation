@@ -12,6 +12,7 @@ import math
 import tkinter as tk
 from tkinter.filedialog import askopenfilename
 import ntpath
+import csv
 from colorama import init
 
 import Droplet_Detection_Utility as DDU
@@ -51,7 +52,7 @@ def banner():
  / /_\/ '__/ _` | | | / __|/ __/ _` | |/ _ \    / /\/ __/ _ \  /  \/ / | | |/ __| |/ _ \/ _` | __| |/ _ \| '_ \ 
 / /_\\| | | (_| | |_| \__ \ (_| (_| | |  __/ /\/ /_| (_|  __/ / /\  /| |_| | (__| |  __/ (_| | |_| | (_) | | | |
 \____/|_|  \__,_|\__, |___/\___\__,_|_|\___| \____/ \___\___| \_\ \/  \__,_|\___|_|\___|\__,_|\__|_|\___/|_| |_|
-                 |___/                                                                  {BOLD}Version pre 2.0{END}                                              
+                 |___/                                                                  {BOLD}Version 2.0{END}                                              
 {END}
     {GREEN}> {END}William Bae | NBD Group @ UBC Chemistry     {GREEN}> {END}www.github.com/wbae03     {GREEN}> {END}LinkedIn: wbae03
 
@@ -293,6 +294,39 @@ except FileExistsError:
 
     print(f"\n{RED}[PROGRAM] > {END}Directory '% s' already exists!" % folder)
 
+    try:
+        
+        with open(os.path.join(save_path, folder, '_GIN_Properties.txt')) as f:
+                  
+            reader = csv.reader(f, delimiter=',')
+
+            rows = list(reader)
+
+            # Ensure there are enough rows before accessing
+            size_ratio = rows[0][1].strip()
+
+            inner_radius_factor = float(rows[2][1].strip())
+
+            outer_radius_factor = float(rows[4][1].strip())
+
+            hough1 = [float(rows[10][1].strip()), float(rows[10][2].strip()), float(rows[10][3].strip()), float(rows[10][4].strip()), int(rows[10][5].strip()), int(rows[10][6].strip())]
+
+            hough2 = [float(rows[12][1].strip()), float(rows[12][2].strip()), float(rows[12][3].strip()), float(rows[12][4].strip()), int(rows[12][5].strip()), int(rows[12][6].strip())]
+
+            hough3 = [float(rows[14][1].strip()), float(rows[14][2].strip()), float(rows[14][3].strip()), float(rows[14][4].strip()), int(rows[14][5].strip()), int(rows[14][6].strip())]
+
+            hough4 = [float(rows[16][1].strip()), float(rows[16][2].strip()), float(rows[16][3].strip()), float(rows[16][4].strip()), int(rows[16][5].strip()), int(rows[16][6].strip())]
+
+            hough5 = [float(rows[18][1].strip()), float(rows[18][2].strip()), float(rows[18][3].strip()), float(rows[18][4].strip()), int(rows[18][5].strip()), int(rows[18][6].strip())]
+
+            hough6 = [float(rows[20][1].strip()), float(rows[20][2].strip()), float(rows[20][3].strip()), float(rows[20][4].strip()), int(rows[20][5].strip()), int(rows[20][6].strip())]
+
+            hough7 = [float(rows[22][1].strip()), float(rows[22][2].strip()), float(rows[22][3].strip()), float(rows[22][4].strip()), int(rows[22][5].strip()), int(rows[22][6].strip())]
+
+    except FileNotFoundError: 
+
+        print("No '_GIN_PROPERTIES.txt' file exists.")
+
 timestr = time.strftime("%Y%m%d_%H%M%S")
 
 timestr_csv_name = f'{timestr}_{csv_name}'
@@ -426,7 +460,7 @@ while True:
                 
                 frame_copy = frame.copy()
 
-                circles, user_circle_detection_ready_input = DDF.frame_circles(frame_copy, n, inner_radius_factor, outer_radius_factor)
+                circles, user_circle_detection_ready_input = DDF.frame_circles(frame_copy, n, inner_radius_factor, outer_radius_factor, hough1, hough2, hough3, hough4, hough5, hough6, hough7)
 
                 # condition if circles are detected
                 if circles is not None:
