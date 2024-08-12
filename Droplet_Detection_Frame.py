@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 import math
 import os
+import csv
 
 RED = "\33[91m"
 BLUE = "\33[94m"
@@ -22,7 +23,7 @@ last_stored_sens_selection = 0
 def frame_capture(i: int, cap):
     cap.set(cv2.CAP_PROP_POS_FRAMES, i)
 
-def frame_circles(frame, n, inner_radius_factor, outer_radius_factor, hough1, hough2, hough3, hough4, hough5, hough6, hough7):
+def frame_circles(frame, n, save_path, folder):
 
     global first_pass, last_stored_sens_selection
 
@@ -45,13 +46,46 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
                         {YELLOW}(2){END} ............. Moderate Clarity, Some Background Noise
                         {YELLOW}(3){END} ............. Average Clarity, Minor Distortion
                         {YELLOW}(4){END} ............. Low Clarity, Faded Circles
-                        {YELLOW}(5){END} ............. Questionable & Blurry Circles {RED}[MAY CRASH COMPUTER!]{END}
-                        {YELLOW}(6){END} ............. Even More Blurry Circles & Larger Circles {RED}[MAY CRASH COMPUTER!]{END}
+                        {YELLOW}(5){END} ............. Questionable & Blurry Circles
+                        {YELLOW}(6){END} ............. Even More Blurry Circles & Larger Circles
                         {YELLOW}(7){END} ............. Hail Mary / All-in! {RED}[WILL PROBABLY CRASH COMPUTER!]{END}
 
                 ''')
         
         sens_selection = input(f'\n{GREEN}[USER INPUT] > {END}')
+
+        try:
+                
+            with open(os.path.join(save_path, folder, '_GIN_Properties.txt')) as f:
+                    
+                reader = csv.reader(f, delimiter=',')
+
+                rows = list(reader)
+
+                # Ensure there are enough rows before accessing
+                size_ratio = rows[0][1].strip()
+
+                inner_radius_factor = float(rows[2][1].strip())
+
+                outer_radius_factor = float(rows[4][1].strip())
+
+                hough1 = [float(rows[10][1].strip()), float(rows[10][2].strip()), float(rows[10][3].strip()), float(rows[10][4].strip()), int(rows[10][5].strip()), int(rows[10][6].strip())]
+
+                hough2 = [float(rows[12][1].strip()), float(rows[12][2].strip()), float(rows[12][3].strip()), float(rows[12][4].strip()), int(rows[12][5].strip()), int(rows[12][6].strip())]
+
+                hough3 = [float(rows[14][1].strip()), float(rows[14][2].strip()), float(rows[14][3].strip()), float(rows[14][4].strip()), int(rows[14][5].strip()), int(rows[14][6].strip())]
+
+                hough4 = [float(rows[16][1].strip()), float(rows[16][2].strip()), float(rows[16][3].strip()), float(rows[16][4].strip()), int(rows[16][5].strip()), int(rows[16][6].strip())]
+
+                hough5 = [float(rows[18][1].strip()), float(rows[18][2].strip()), float(rows[18][3].strip()), float(rows[18][4].strip()), int(rows[18][5].strip()), int(rows[18][6].strip())]
+
+                hough6 = [float(rows[20][1].strip()), float(rows[20][2].strip()), float(rows[20][3].strip()), float(rows[20][4].strip()), int(rows[20][5].strip()), int(rows[20][6].strip())]
+
+                hough7 = [float(rows[22][1].strip()), float(rows[22][2].strip()), float(rows[22][3].strip()), float(rows[22][4].strip()), int(rows[22][5].strip()), int(rows[22][6].strip())]
+
+        except FileNotFoundError: 
+
+            print("No '_GIN_PROPERTIES.txt' file exists. Please obtain the file by following the README.txt and downloading from Github.")
 
         try: 
             if isinstance(int(sens_selection), int):

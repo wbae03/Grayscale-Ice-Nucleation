@@ -7,7 +7,7 @@ Outer Radius Factor (relative to detected circle) [FLOAT], 1.4
 ### Parameters for Circle Detection Options ###
 ### Refer to cv2.HoughCircles Documentation online for details on parameters
 
-#############(merge, minDist, sens, accur, minRad, MaxRad)
+#############(merge, minDist, sens, accur, minRad, MaxRad, option desc)
 Option One,     1.1,     300,   20,    35,      5,    400
 
 Option Two,     1.1,      30,   30,    50,      5,    400
