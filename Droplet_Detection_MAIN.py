@@ -52,7 +52,7 @@ def banner():
  / /_\/ '__/ _` | | | / __|/ __/ _` | |/ _ \    / /\/ __/ _ \  /  \/ / | | |/ __| |/ _ \/ _` | __| |/ _ \| '_ \ 
 / /_\\| | | (_| | |_| \__ \ (_| (_| | |  __/ /\/ /_| (_|  __/ / /\  /| |_| | (__| |  __/ (_| | |_| | (_) | | | |
 \____/|_|  \__,_|\__, |___/\___\__,_|_|\___| \____/ \___\___| \_\ \/  \__,_|\___|_|\___|\__,_|\__|_|\___/|_| |_|
-                 |___/                                                                  {BOLD}Version 2.0{END}                                              
+                 |___/                                                                  {BOLD}Version 2.1{END}                                              
 {END}
     {GREEN}> {END}William Bae | NBD Group @ UBC Chemistry     {GREEN}> {END}www.github.com/wbae03     {GREEN}> {END}LinkedIn: wbae03
 
@@ -421,13 +421,17 @@ while True:
 
             DDF.frame_capture(frame_id, cap)
 
-            while user_circle_detection_ready == False:
+            # keep the original, unprocessed frame out of the while loop so that any changes to the name can remain saved out of the loop
+            n = 'FILLER TITLE TO BE REPLACED: WINDOW 1 /// DETECTED CIRCLES'
 
-                n = 'WINDOW 1 /// DETECTED CIRCLES'
+            name = 'FILTER TITLE FOR BLUR WINDOW'
+
+            while user_circle_detection_ready == False:
                 
                 frame_copy = frame.copy()
 
-                n, circles, user_circle_detection_ready_input = DDF.frame_circles(frame_copy, n, save_path, folder)
+                # obtain the settings given in the _GIN_PROPERTIES.txt file, for use in data processing
+                n, circles, user_circle_detection_ready_input, blur, name, size_ratio = DDF.frame_circles(frame_copy, n, name, save_path, folder)
 
                 # condition if circles are detected
                 if circles is not None:
@@ -436,16 +440,28 @@ while True:
 
                     DDF.frame_overlay_label(areas_sorted, frame_copy, cap, calibration_ratio)
 
+                    # Making the named windows
                     cv2.namedWindow(n)
 
+                    cv2.namedWindow(name)
+
+                    # Setting properties for unprocessed window
                     cv2.setWindowProperty(n, cv2.WND_PROP_TOPMOST, 1)
 
                     cv2.moveWindow(n,10,50)
 
+                    cv2.moveWindow(name,10,100)
+
+                    # Show the processed blur/filter window
+                    DDU.show_window(name, blur, size_ratio, cap, filename)
+
+                    # Show the original window with overlayed circles
                     DDU.show_window(n, frame_copy, size_ratio, cap, filename)
 
+                    cv2.imwrite(os.path.join(directory, f'Image_00_[Pre_Detection_Processing_using_{name}]_{csv_name}.png'), blur)
+
                     cv2.imwrite(os.path.join(directory, f'Image_01_[Detected_Circles]_{csv_name}.png'), frame_copy)
-            
+
                     if user_circle_detection_ready_input == True:
 
                         user_circle_detection_ready = True
@@ -517,8 +533,35 @@ while True:
         break
 
 cv2.destroyWindow(n)
-
+cv2.destroyWindow(name)
 cv2.destroyWindow(m)
+
+'''
+# get rid of windows
+try:
+
+    cv2.destroyWindow(n)
+
+except:
+
+    filler = 1
+
+try:
+    
+    cv2.destroyWindow(name)
+
+except:
+
+    filler = 1
+
+try:
+
+    cv2.destroyWindow(m)
+
+except:
+
+    filler = 1
+'''
 
 # add space before the loading loop. 
 print('\n') 
@@ -728,8 +771,6 @@ while True:
         {CYAN}Options                                                            Description{END}
            {YELLOW}(1) Yes. Upload .csv File{END} ----------- File must contain a {YELLOW}\'Temperature\' (C) and a \'Seconds\' column{END}.
            {YELLOW}(2) Yes. Input a Temperature Ramp{END} ----- Input the {YELLOW}change in degrees C° / second{END} beginning at the video start {RED}(+/- signs matter!).{END}))
-           {YELLOW}(3) No. {END}------------------------------- No temperature-related plots will be given. Only the intensity plots vs time will be shown.
-
         ''')
 
         ask_user_temperature = input(f'\n\n{GREEN}[USER INPUT] > {END}')
@@ -787,29 +828,14 @@ while True:
 
             ask_user_temperature_ready = True
 
-
-        elif ask_user_temperature == '3':
-
-            #use_temperature_file = False
-
-            ask_user_temperature_ready = True
-
         else:
 
             print(f'\n{RED}[PROGRAM] > {END}Invalid input. Please select an option (1-3).\n')
 
     
     x = input(f'\n{RED}[PROGRAM] > {END}To save the data as a .csv file and to show the plotted graphs, press {YELLOW}[ENTER]{END}.\n\n{GREEN}[USER INPUT] > {END}')
-    if x in 'Rr':
-        break
-
-
-
-    if cv2.waitKey(1) == ord('r'): #27: # Escape key ASCII is 27. If R is pressed on video instead of console.
-        break
-
-
-
+    
+    break
 
 video_seconds = []
 
@@ -827,7 +853,6 @@ fig1, axis = plt.subplots(2, 2, figsize=(30,15)) # width, height
 DDG.plot_intensity_vs_seconds(intensity_axes, video_seconds, axis)
 
 DDG.plot_dintensity_vs_seconds(intensity_difference_axes, video_seconds, axis)
-
 
 
 circle_radii = []

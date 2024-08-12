@@ -41,7 +41,7 @@ def show_window(window_name: str, frame, size_ratio, cap, filename):
     resized_frame = get_frame_id(resized_frame, cap)
 
     cv2.setWindowProperty(window_name, cv2.WND_PROP_TOPMOST, 1)
-    cv2.moveWindow(window_name,10,50)
+    #cv2.moveWindow(window_name,10,50)
     cv2.imshow(window_name, resized_frame)
 
 

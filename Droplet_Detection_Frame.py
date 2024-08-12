@@ -5,6 +5,8 @@ import numpy as np
 import math
 import os
 import csv
+import matplotlib.pyplot as plt
+import Droplet_Detection_Utility as DDU
 
 RED = "\33[91m"
 BLUE = "\33[94m"
@@ -23,13 +25,54 @@ last_stored_sens_selection = 0
 def frame_capture(i: int, cap):
     cap.set(cv2.CAP_PROP_POS_FRAMES, i)
 
-def frame_circles(frame, n, save_path, folder):
-
-    global first_pass, last_stored_sens_selection
+def choose_blur(x: int, frame):
 
     grayFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # grayscale to remove color noise
 
-    blurFrame = cv2.GaussianBlur(grayFrame, (17, 17), 0) # blur to lower background noise. 2nd p: both values must be odd. Higher = more blur. Default: 17,17
+    # Blur Type aka 2D Convolution (Image Filtering); Select one of the filters below for circle detection.
+    gaussianFrame = cv2.GaussianBlur(grayFrame, (17, 17), 0) # blur to lower background noise. 2nd p: both values must be odd. Higher = more blur. Default: 17,17
+
+    averagingFrame = cv2.blur(grayFrame, (5, 5)) # blur to lower background noise. 2nd p: both values must be odd. Higher = more blur. Default: 17,17
+
+    medianFrame = cv2.medianBlur(grayFrame, 5) # blur to lower background noise. 2nd p: both values must be odd. Higher = more blur. Default: 17,17
+
+    bilateralFrame = cv2.bilateralFilter(grayFrame, 9, 75, 75) # blur to lower background noise. 2nd p: both values must be odd. Higher = more blur. Default: 17,17
+    
+    if x == 1:
+
+        blur = grayFrame
+
+        name = 'cv2.COLOR_BGR2GRAY Grayframe [1]'
+
+    elif x == 2: 
+
+        blur = gaussianFrame
+
+        name = 'Gaussian Blur Grayframe [2]'
+
+    elif x == 3:
+
+        blur = averagingFrame
+
+        name = 'Averaging Blur Grayframe [3]'
+
+    elif x == 4:
+
+        blur = medianFrame
+
+        name = 'Median Blur Grayframe [4]'
+
+    elif x == 5:
+
+        blur = bilateralFrame
+
+        name = 'Bilateral Filtering Grayframe [5]'
+
+    return blur, name
+
+def frame_circles(frame, n, name, save_path, folder):
+
+    global first_pass, last_stored_sens_selection
 
     sens_selection_ready = False
 
@@ -72,19 +115,19 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
 
                 outer_radius_factor = float(rows[4][1].strip())
 
-                hough1 = [float(rows[10][1].strip()), float(rows[10][2].strip()), float(rows[10][3].strip()), float(rows[10][4].strip()), int(rows[10][5].strip()), int(rows[10][6].strip())]
+                hough1 = [float(rows[10][1].strip()), float(rows[10][2].strip()), float(rows[10][3].strip()), float(rows[10][4].strip()), int(rows[10][5].strip()), int(rows[10][6].strip()), int(rows[10][7].strip())]
 
-                hough2 = [float(rows[12][1].strip()), float(rows[12][2].strip()), float(rows[12][3].strip()), float(rows[12][4].strip()), int(rows[12][5].strip()), int(rows[12][6].strip())]
+                hough2 = [float(rows[12][1].strip()), float(rows[12][2].strip()), float(rows[12][3].strip()), float(rows[12][4].strip()), int(rows[12][5].strip()), int(rows[12][6].strip()), int(rows[12][7].strip())]
 
-                hough3 = [float(rows[14][1].strip()), float(rows[14][2].strip()), float(rows[14][3].strip()), float(rows[14][4].strip()), int(rows[14][5].strip()), int(rows[14][6].strip())]
+                hough3 = [float(rows[14][1].strip()), float(rows[14][2].strip()), float(rows[14][3].strip()), float(rows[14][4].strip()), int(rows[14][5].strip()), int(rows[14][6].strip()), int(rows[14][7].strip())]
 
-                hough4 = [float(rows[16][1].strip()), float(rows[16][2].strip()), float(rows[16][3].strip()), float(rows[16][4].strip()), int(rows[16][5].strip()), int(rows[16][6].strip())]
+                hough4 = [float(rows[16][1].strip()), float(rows[16][2].strip()), float(rows[16][3].strip()), float(rows[16][4].strip()), int(rows[16][5].strip()), int(rows[16][6].strip()), int(rows[16][7].strip())]
 
-                hough5 = [float(rows[18][1].strip()), float(rows[18][2].strip()), float(rows[18][3].strip()), float(rows[18][4].strip()), int(rows[18][5].strip()), int(rows[18][6].strip())]
+                hough5 = [float(rows[18][1].strip()), float(rows[18][2].strip()), float(rows[18][3].strip()), float(rows[18][4].strip()), int(rows[18][5].strip()), int(rows[18][6].strip()), int(rows[18][7].strip())]
 
-                hough6 = [float(rows[20][1].strip()), float(rows[20][2].strip()), float(rows[20][3].strip()), float(rows[20][4].strip()), int(rows[20][5].strip()), int(rows[20][6].strip())]
+                hough6 = [float(rows[20][1].strip()), float(rows[20][2].strip()), float(rows[20][3].strip()), float(rows[20][4].strip()), int(rows[20][5].strip()), int(rows[20][6].strip()), int(rows[20][7].strip())]
 
-                hough7 = [float(rows[22][1].strip()), float(rows[22][2].strip()), float(rows[22][3].strip()), float(rows[22][4].strip()), int(rows[22][5].strip()), int(rows[22][6].strip())]
+                hough7 = [float(rows[22][1].strip()), float(rows[22][2].strip()), float(rows[22][3].strip()), float(rows[22][4].strip()), int(rows[22][5].strip()), int(rows[22][6].strip()), int(rows[22][7].strip())]
 
         except FileNotFoundError: 
 
@@ -97,16 +140,17 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
                     sens_selection = int(sens_selection)
                     last_stored_sens_selection = sens_selection
 
-                    n = f'WINDOW 1 /// DETECTED CIRCLES /// PARAMETER OPTION #{sens_selection}'
-                    
-
                     if first_pass == True:
         
                         cv2.destroyWindow(n)
 
+                        cv2.destroyWindow(name)
+
                     else: 
                         first_pass = True
         
+                    n = f'WINDOW 1 /// DETECTED CIRCLES /// PARAMETER OPTION #{sens_selection}'
+
         except:
 
             if first_pass == True: # or enter
@@ -120,11 +164,13 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
             else:
                 print(f'\n{RED}[PROGRAM] > {END}Invalid input. Please enter an integer value from the provided options.')
 
-
+    # obtain the blur filter based on the input in the _GIN_PROPERTIES.txt
 
     if sens_selection == 1:
 
-        circles = cv2.HoughCircles(blurFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
+        blur, name = choose_blur(hough1[6], frame)
+
+        circles = cv2.HoughCircles(blur, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                                 cv2.HOUGH_GRADIENT, 
                                 hough1[0], # influences whether nearby circles will be merged
                                 hough1[1], # min distance between two circles' centers
@@ -132,13 +178,14 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
                                 param2=hough1[3], # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles. Default: 75
                                 minRadius=hough1[4], # min radius of circles
                                 maxRadius=hough1[5])  # max radius of circles # note to self: the radii parameters are quite important in selecting correct circles!!
-        
-        print(f'\n{RED}[PROGRAM] > {END}Detection parameters {YELLOW}(1){END} used by the program.')
 
+        print(f'\n{RED}[PROGRAM] > {END}Detection parameters {YELLOW}(1){END} used by the program.')
 
     elif sens_selection == 2:
 
-        circles = cv2.HoughCircles(blurFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
+        blur, name = choose_blur(hough2[6], frame)
+
+        circles = cv2.HoughCircles(blur, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                                 cv2.HOUGH_GRADIENT, 
                                 hough2[0], # influences whether nearby circles will be merged
                                 hough2[1], # min distance between two circles' centers
@@ -146,14 +193,15 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
                                 param2=hough2[3], # accuracy of circle detection; number of edgepoints to declare there's a circle. High = wont find much circles. Default: 75
                                 minRadius=hough2[4], # min radius of circles
                                 maxRadius=hough2[5])  # max radius of circles # note to self: the radii parameters are quite important in selecting correct circles!!
-        
+
         print(f'\n{RED}[PROGRAM] > {END}Detection parameters {YELLOW}(2){END} used by the program.')
 
 
     elif sens_selection == 3:
 
+        blur, name = choose_blur(hough3[6], frame)
             
-        circles = cv2.HoughCircles(blurFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
+        circles = cv2.HoughCircles(blur, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                                 cv2.HOUGH_GRADIENT, 
                                 hough3[0], # influences whether nearby circles will be merged
                                 hough3[1], # min distance between two circles' centers
@@ -167,7 +215,9 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
 
     elif sens_selection == 4:
 
-        circles = cv2.HoughCircles(blurFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
+        blur, name = choose_blur(hough4[6], frame)
+
+        circles = cv2.HoughCircles(blur, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                                 cv2.HOUGH_GRADIENT, 
                                 hough4[0], # influences whether nearby circles will be merged
                                 hough4[1], # min distance between two circles' centers
@@ -181,7 +231,9 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
 
     elif sens_selection == 5:
 
-        circles = cv2.HoughCircles(grayFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
+        blur, name = choose_blur(hough5[6], frame)
+
+        circles = cv2.HoughCircles(blur, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                                 cv2.HOUGH_GRADIENT, 
                                 hough5[0], # influences whether nearby circles will be merged
                                 hough5[1], # min distance between two circles' centers
@@ -194,7 +246,9 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
                 
     elif sens_selection == 6:
 
-        circles = cv2.HoughCircles(grayFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
+        blur, name = choose_blur(hough6[6], frame)
+
+        circles = cv2.HoughCircles(blur, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                                 cv2.HOUGH_GRADIENT, 
                                 hough6[0], # influences whether nearby circles will be merged
                                 hough6[1], # min distance between two circles' centers
@@ -207,7 +261,9 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
 
     elif sens_selection == 7:
 
-        circles = cv2.HoughCircles(grayFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
+        blur, name = choose_blur(hough7[6], frame)
+
+        circles = cv2.HoughCircles(blur, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                                 cv2.HOUGH_GRADIENT, 
                                 hough7[0], # influences whether nearby circles will be merged
                                 hough7[1], # min distance between two circles' centers
@@ -217,7 +273,6 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
                                 maxRadius=hough7[5])  # max radius of circles # note to self: the radii parameters are quite important in selecting correct circles!!
         
         print(f'\n{RED}[PROGRAM] > {END}Detection parameters {YELLOW}(7){END} used by the program.') 
-
 
     if circles is not None:
 
@@ -267,7 +322,7 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
         user_circle_detection_ready_input = False # to be returned to decide if main loop continues or terminates
 
     ### print('\nDetected circles [x-pos, y-pos, radius]: \n', circles) # to see the numpyarray of the circles generated in this frame. [y, x, r]
-    return n, circles, user_circle_detection_ready_input
+    return n, circles, user_circle_detection_ready_input, blur, name, size_ratio
 
 def frame_overlay_sort(circles):
     
