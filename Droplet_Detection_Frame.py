@@ -42,13 +42,16 @@ Choosing the wrong sensitivity may lead to overwhelming or underwhelming false-p
 If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
 
                 {CYAN}Sensitivity Option        Use if the Video Footage Contains:{END}
-                        {YELLOW}(1){END} ............. High Clarity, Distinct & Perfect Circles
-                        {YELLOW}(2){END} ............. Moderate Clarity, Some Background Noise
-                        {YELLOW}(3){END} ............. Average Clarity, Minor Distortion
-                        {YELLOW}(4){END} ............. Low Clarity, Faded Circles
-                        {YELLOW}(5){END} ............. Questionable & Blurry Circles
-                        {YELLOW}(6){END} ............. Even More Blurry Circles & Larger Circles
-                        {YELLOW}(7){END} ............. Hail Mary / All-in! {RED}[WILL PROBABLY CRASH COMPUTER!]{END}
+                        {YELLOW}(1){END} ............. [BLURFRAME] High Clarity, Distinct Circles
+                        {YELLOW}(2){END} ............. [BLURFRAME] Moderate Clarity
+                        {YELLOW}(3){END} ............. [BLURFRAME] Average Clarity
+                        {YELLOW}(4){END} ............. [BLURFRAME] Low Clarity
+                        {YELLOW}(5){END} ............. [GRAYFRAME] High Clarity
+                        {YELLOW}(6){END} ............. [GRAYFRAME] Average Clarity
+                        {YELLOW}(7){END} ............. [GRAYFRAME] Low Clarity
+
+                        * BLURFRAME blurs the input video, reducing the noise of shapes to give more accurate circle detection.
+                        * If BLURFRAME is not giving the best results, try using GRAYFRAME which only grayscales the video.
 
                 ''')
         
@@ -93,6 +96,8 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
                     sens_selection_ready = True
                     sens_selection = int(sens_selection)
                     last_stored_sens_selection = sens_selection
+
+                    n = f'WINDOW 1 /// DETECTED CIRCLES /// PARAMETER OPTION #{sens_selection}'
                     
 
                     if first_pass == True:
@@ -176,7 +181,7 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
 
     elif sens_selection == 5:
 
-        circles = cv2.HoughCircles(blurFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
+        circles = cv2.HoughCircles(grayFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                                 cv2.HOUGH_GRADIENT, 
                                 hough5[0], # influences whether nearby circles will be merged
                                 hough5[1], # min distance between two circles' centers
@@ -189,7 +194,7 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
                 
     elif sens_selection == 6:
 
-        circles = cv2.HoughCircles(blurFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
+        circles = cv2.HoughCircles(grayFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                                 cv2.HOUGH_GRADIENT, 
                                 hough6[0], # influences whether nearby circles will be merged
                                 hough6[1], # min distance between two circles' centers
@@ -202,7 +207,7 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
 
     elif sens_selection == 7:
 
-        circles = cv2.HoughCircles(blurFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
+        circles = cv2.HoughCircles(grayFrame, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                                 cv2.HOUGH_GRADIENT, 
                                 hough7[0], # influences whether nearby circles will be merged
                                 hough7[1], # min distance between two circles' centers
@@ -262,7 +267,7 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
         user_circle_detection_ready_input = False # to be returned to decide if main loop continues or terminates
 
     ### print('\nDetected circles [x-pos, y-pos, radius]: \n', circles) # to see the numpyarray of the circles generated in this frame. [y, x, r]
-    return circles, user_circle_detection_ready_input
+    return n, circles, user_circle_detection_ready_input
 
 def frame_overlay_sort(circles):
     

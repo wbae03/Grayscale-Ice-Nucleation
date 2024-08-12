@@ -427,7 +427,7 @@ while True:
                 
                 frame_copy = frame.copy()
 
-                circles, user_circle_detection_ready_input = DDF.frame_circles(frame_copy, n, save_path, folder)
+                n, circles, user_circle_detection_ready_input = DDF.frame_circles(frame_copy, n, save_path, folder)
 
                 # condition if circles are detected
                 if circles is not None:
