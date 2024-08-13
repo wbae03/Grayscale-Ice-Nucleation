@@ -25,18 +25,20 @@ last_stored_sens_selection = 0
 def frame_capture(i: int, cap):
     cap.set(cv2.CAP_PROP_POS_FRAMES, i)
 
-def choose_blur(x: int, frame):
+def choose_blur(x: int, frame, contrastParam, brightnessParam):
 
     grayFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # grayscale to remove color noise
 
+    contrastFrame = cv2.addWeighted(grayFrame, contrastParam, np.zeros(grayFrame.shape, grayFrame.dtype), 0, brightnessParam)
+
     # Blur Type aka 2D Convolution (Image Filtering); Select one of the filters below for circle detection.
-    gaussianFrame = cv2.GaussianBlur(grayFrame, (17, 17), 0) # blur to lower background noise. 2nd p: both values must be odd. Higher = more blur. Default: 17,17
+    gaussianFrame = cv2.GaussianBlur(contrastFrame, (17, 17), 0) # blur to lower background noise. 2nd p: both values must be odd. Higher = more blur. Default: 17,17
 
-    averagingFrame = cv2.blur(grayFrame, (5, 5)) # blur to lower background noise. 2nd p: both values must be odd. Higher = more blur. Default: 17,17
+    averagingFrame = cv2.blur(contrastFrame, (5, 5)) # blur to lower background noise. 2nd p: both values must be odd. Higher = more blur. Default: 17,17
 
-    medianFrame = cv2.medianBlur(grayFrame, 5) # blur to lower background noise. 2nd p: both values must be odd. Higher = more blur. Default: 17,17
+    medianFrame = cv2.medianBlur(contrastFrame, 5) # blur to lower background noise. 2nd p: both values must be odd. Higher = more blur. Default: 17,17
 
-    bilateralFrame = cv2.bilateralFilter(grayFrame, 9, 75, 75) # blur to lower background noise. 2nd p: both values must be odd. Higher = more blur. Default: 17,17
+    bilateralFrame = cv2.bilateralFilter(contrastFrame, 9, 75, 75) # blur to lower background noise. 2nd p: both values must be odd. Higher = more blur. Default: 17,17
     
     if x == 1:
 
@@ -129,6 +131,11 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
 
                 hough7 = [float(rows[22][1].strip()), float(rows[22][2].strip()), float(rows[22][3].strip()), float(rows[22][4].strip()), int(rows[22][5].strip()), int(rows[22][6].strip()), int(rows[22][7].strip())]
 
+                contrastParam = float(rows[24][1].strip())
+
+                brightnessParam = float(rows[26][1].strip())
+
+
         except FileNotFoundError: 
 
             print("No '_GIN_PROPERTIES.txt' file exists. Please obtain the file by following the README.txt and downloading from Github.")
@@ -168,7 +175,7 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
 
     if sens_selection == 1:
 
-        blur, name = choose_blur(hough1[6], frame)
+        blur, name = choose_blur(hough1[6], frame, contrastParam, brightnessParam)
 
         circles = cv2.HoughCircles(blur, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                                 cv2.HOUGH_GRADIENT, 
@@ -183,7 +190,7 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
 
     elif sens_selection == 2:
 
-        blur, name = choose_blur(hough2[6], frame)
+        blur, name = choose_blur(hough2[6], frame, contrastParam, brightnessParam)
 
         circles = cv2.HoughCircles(blur, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                                 cv2.HOUGH_GRADIENT, 
@@ -199,7 +206,7 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
 
     elif sens_selection == 3:
 
-        blur, name = choose_blur(hough3[6], frame)
+        blur, name = choose_blur(hough3[6], frame, contrastParam, brightnessParam)
             
         circles = cv2.HoughCircles(blur, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                                 cv2.HOUGH_GRADIENT, 
@@ -215,7 +222,7 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
 
     elif sens_selection == 4:
 
-        blur, name = choose_blur(hough4[6], frame)
+        blur, name = choose_blur(hough4[6], frame, contrastParam, brightnessParam)
 
         circles = cv2.HoughCircles(blur, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                                 cv2.HOUGH_GRADIENT, 
@@ -231,7 +238,7 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
 
     elif sens_selection == 5:
 
-        blur, name = choose_blur(hough5[6], frame)
+        blur, name = choose_blur(hough5[6], frame, contrastParam, brightnessParam)
 
         circles = cv2.HoughCircles(blur, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                                 cv2.HOUGH_GRADIENT, 
@@ -246,7 +253,7 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
                 
     elif sens_selection == 6:
 
-        blur, name = choose_blur(hough6[6], frame)
+        blur, name = choose_blur(hough6[6], frame, contrastParam, brightnessParam)
 
         circles = cv2.HoughCircles(blur, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                                 cv2.HOUGH_GRADIENT, 
@@ -261,7 +268,7 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
 
     elif sens_selection == 7:
 
-        blur, name = choose_blur(hough7[6], frame)
+        blur, name = choose_blur(hough7[6], frame, contrastParam, brightnessParam)
 
         circles = cv2.HoughCircles(blur, # documentation: https://docs.opencv.org/4.3.0/d3/de5/tutorial_js_houghcircles.html
                                 cv2.HOUGH_GRADIENT, 
@@ -322,7 +329,7 @@ If you are satisfied with the sensitivity, press {YELLOW}[ ENTER ]{END}.
         user_circle_detection_ready_input = False # to be returned to decide if main loop continues or terminates
 
     ### print('\nDetected circles [x-pos, y-pos, radius]: \n', circles) # to see the numpyarray of the circles generated in this frame. [y, x, r]
-    return n, circles, user_circle_detection_ready_input, blur, name, size_ratio
+    return n, circles, user_circle_detection_ready_input, blur, name, float(size_ratio)
 
 def frame_overlay_sort(circles):
     

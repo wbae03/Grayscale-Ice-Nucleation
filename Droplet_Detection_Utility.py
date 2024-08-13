@@ -12,16 +12,16 @@ import math
 
 
 
-def make_appropriate_window_size(frame, cap):
+def make_appropriate_window_size(frame, cap, size_ratio):
 
         width = int(cap.get(3))
         height = int(cap.get(4))
 
-        target_resolution_x = 600
+        #target_resolution_x = 600
         #target_resolution_y = height / (width/960)
 
-        ratio_x = target_resolution_x / width
-        ratio_y =  ratio_x
+        #ratio_x = target_resolution_x / width
+        #ratio_y =  ratio_x
 
         #if ratio_x >= 1:
          #    ratio_x = 1 / ratio_x
@@ -29,14 +29,14 @@ def make_appropriate_window_size(frame, cap):
         #if ratio_y >= 1:
          #    ratio_y = 1 / ratio_y
 
-        resized_frame = cv2.resize(frame, (0,0), fx = ratio_x, fy = ratio_y)
+        resized_frame = cv2.resize(frame, (0,0), fx = size_ratio, fy = size_ratio)
                                         
         return resized_frame
     
 
 def show_window(window_name: str, frame, size_ratio, cap, filename):
     #resized_frame = cv2.resize(frame, (0,0), fx = size_ratio, fy = size_ratio)
-    resized_frame = make_appropriate_window_size(frame, cap)
+    resized_frame = make_appropriate_window_size(frame, cap, size_ratio)
     resized_frame = vid_datetime(filename, resized_frame)
     resized_frame = get_frame_id(resized_frame, cap)
 

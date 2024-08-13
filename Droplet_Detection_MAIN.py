@@ -52,7 +52,7 @@ def banner():
  / /_\/ '__/ _` | | | / __|/ __/ _` | |/ _ \    / /\/ __/ _ \  /  \/ / | | |/ __| |/ _ \/ _` | __| |/ _ \| '_ \ 
 / /_\\| | | (_| | |_| \__ \ (_| (_| | |  __/ /\/ /_| (_|  __/ / /\  /| |_| | (__| |  __/ (_| | |_| | (_) | | | |
 \____/|_|  \__,_|\__, |___/\___\__,_|_|\___| \____/ \___\___| \_\ \/  \__,_|\___|_|\___|\__,_|\__|_|\___/|_| |_|
-                 |___/                                                                  {BOLD}Version 2.1{END}                                              
+                 |___/                                                                  {BOLD}Version 2.2{END}                                              
 {END}
     {GREEN}> {END}William Bae | NBD Group @ UBC Chemistry     {GREEN}> {END}www.github.com/wbae03     {GREEN}> {END}LinkedIn: wbae03
 
@@ -448,9 +448,9 @@ while True:
                     # Setting properties for unprocessed window
                     cv2.setWindowProperty(n, cv2.WND_PROP_TOPMOST, 1)
 
-                    cv2.moveWindow(n,10,50)
+                    cv2.moveWindow(n,10,0)
 
-                    cv2.moveWindow(name,10,100)
+                    cv2.moveWindow(name,10,50)
 
                     # Show the processed blur/filter window
                     DDU.show_window(name, blur, size_ratio, cap, filename)
@@ -458,13 +458,13 @@ while True:
                     # Show the original window with overlayed circles
                     DDU.show_window(n, frame_copy, size_ratio, cap, filename)
 
-                    cv2.imwrite(os.path.join(directory, f'Image_00_[Pre_Detection_Processing_using_{name}]_{csv_name}.png'), blur)
-
-                    cv2.imwrite(os.path.join(directory, f'Image_01_[Detected_Circles]_{csv_name}.png'), frame_copy)
-
                     if user_circle_detection_ready_input == True:
 
                         user_circle_detection_ready = True
+
+                        cv2.imwrite(os.path.join(directory, f'Image_00_[Pre_Detection_Processing_using_{name}]_{csv_name}.png'), blur)
+
+                        cv2.imwrite(os.path.join(directory, f'Image_01_[Detected_Circles]_{csv_name}.png'), frame_copy)
                 
                 # condition if no circles are detected
                 else:
@@ -752,6 +752,9 @@ while True:
     frozen_frame = DDU.get_frame_id(frozen_frame, cap3)
 
     cv2.imwrite(os.path.join(directory, f'Image_03_[Fully_Frozen]_{csv_name}.png'), frozen_frame)
+
+    #cv2.imwrite(os.path.join(directory, f'Image_00_[Pre_Detection_Processing_using_{name}]_{csv_name}.png'), blur)
+
 
     end_time = time.time()
 
